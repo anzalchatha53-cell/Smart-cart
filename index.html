@@ -438,8 +438,8 @@
                 <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
-    </div>
-        <script>
+                </div>
+                        <script>
         let audioCtx = null;
 
         function getAudioContext() {
@@ -481,7 +481,7 @@
         let shoppingList = JSON.parse(localStorage.getItem("smartCart_list")) || [];
         let historyStore = JSON.parse(localStorage.getItem("smartCart_history")) || [];
 
-        // Dynamic local database (Predefined + User Saved)
+        // Predefined local database
         const defaultDatabase = [
             { name: "Olper's Milk (1 Litre)", barcode: "8964000120102", rates: { PK: 290, IN: 80, US: 1.1 } },
             { name: "MilkPak (1 Litre)", barcode: "8964000100012", rates: { PK: 295, IN: 82, US: 1.15 } },
@@ -621,7 +621,7 @@
                 document.getElementById("scannerModal").classList.remove("active");
             }
         }
-                    function saveCustomBarcodeToDB() {
+               function saveCustomBarcodeToDB() {
             const barcode = document.getElementById("newBarcodeVal").value;
             const name = document.getElementById("newProductName").value.trim();
             const price = parseFloat(document.getElementById("newProductPrice").value) || 0;
@@ -669,7 +669,7 @@
 
             if (modal.classList.contains("active")) {
                 container.innerHTML = "";
-                if (historyStore.length === 0) {
+                if (historyStore.length ===0) {
                     container.innerHTML = "<p style='color:var(--text-sub); text-align:center;'>No past records found.</p>";
                     return;
                 }
