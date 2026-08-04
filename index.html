@@ -513,9 +513,9 @@
         </div>
     </div>
         <script>
-        // API Key Integration
+        // Updated API Key
         const GEMINI_API_KEY = "AQ.Ab8RN6KvudD3M6f1kV9f-jEJbBRRw-fcwMUge0AJmRZyUK6wsw";
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
         let state = {
             country: 'PK',
@@ -549,7 +549,7 @@
             document.getElementById('aiView').classList.toggle('active', tab === 'ai');
             document.getElementById('tabCartBtn').classList.toggle('active', tab === 'cart');
             document.getElementById('tabAiBtn').classList.toggle('active', tab === 'ai');
-            if (tab === 'ai') renderChips();
+            renderChips();
         }
 
         function toggleTheme() {
@@ -581,7 +581,9 @@
                 return;
             }
 
-            if (!state.learnedItems.includes(finalName)) {
+            // Case-insensitive duplicate check & insert at top
+            const exists = state.learnedItems.some(i => i.toLowerCase() === finalName.toLowerCase());
+            if (!exists) {
                 state.learnedItems.unshift(finalName);
             }
 
@@ -600,6 +602,7 @@
             }
 
             render();
+            renderChips(); // Dynamic Chip Learning Fix
         }
 
         function toggleComplete(id) {
@@ -703,8 +706,9 @@
 
         function renderChips() {
             const container = document.getElementById('suggestionChipsContainer');
+            if (!container) return;
             container.innerHTML = '';
-            state.learnedItems.slice(0, 8).forEach(item => {
+            state.learnedItems.slice(0, 10).forEach(item => {
                 const chip = document.createElement('button');
                 chip.className = 'chip-btn';
                 chip.textContent = `💡 Price of ${item}?`;
@@ -738,13 +742,12 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const prompt = `You are an AI Smart Shopping Assistant for ${state.country} region. 
+                const prompt = `You are a helpful AI Smart Shopping Assistant for ${state.country} region. 
                 User query: "${userMsg}".
                 Task:
-                1. Identify if the user is asking about an item's estimated market price or asking for a product quote.
-                2. Respond concisely in Roman Urdu or English.
-                3. ALWAYS format the estimated price cleanly.
-                4. At the very end of your response, strictly output JSON block if item/price detected:
+                1. Provide a direct, helpful estimate for the requested product/price in ${state.currency}.
+                2. Keep the answer concise in natural Roman Urdu or English.
+                3. ALWAYS end with a strict JSON snippet formatted like this:
                 @@JSON{"name": "Item Name", "price": 250, "qty": 1}@@`;
 
                 const response = await fetch(GEMINI_API_URL, {
@@ -756,7 +759,13 @@
                 });
 
                 const data = await response.json();
-                let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mujhe samajh nahi aaya, phir se likhein.";
+                
+                if (data.error) {
+                    aiBubble.textContent = `❌ API Error: ${data.error.message}`;
+                    return;
+                }
+
+                let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Response nahi mila. Key check karein.";
 
                 let parsedItem = null;
                 const jsonMatch = reply.match(/@@JSON({.*?})@@/s);
@@ -783,7 +792,7 @@
                 }
 
             } catch (err) {
-                aiBubble.textContent = '❌ API Error: Connection check karein ya Key re-verify karein.';
+                aiBubble.textContent = '❌ Fetch Error: Connection loss ya invalid API Key.';
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -798,6 +807,7 @@
         }
 
         render();
+        renderChips();
     </script>
 </body>
 </html>
