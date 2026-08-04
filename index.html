@@ -3,10 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Cart Pro - All-in-One</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Smart Cart Pro</title>
     <!-- Camera Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        :root {
+            --bg-body: #07090e;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.09);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+            --danger: #ef4444;
+            --progress-color: #10b981;
+            --glow-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .light-mode {
+            --bg-body: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .app-frame {
+            width: 100%;
+            max-width: 420px;
+            height: 100dvh;
+            max-height: 880px;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .icon-btn:active, .submit-btn:active, .export-btn:active, .action-btn:active {
+            transform: scale(0.92);
+        }
+
+        .settings-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            backdrop-filter: blur(12px);
+        }
+
+        .select-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .select-group label {
+            font-size: 0.68rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        select, input {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: border-color 0.2s ease;
+        }
+
+        select:focus, input:focus {
+            border-color: #6366f1;
+        }
+
+        .budget-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 8px 20px var(--glow-color);
+            transition: box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mood-container {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .anim-emoji { font-size: 1.5rem; display: inline-block; }
+        .happy-bounce { animation: bounce 1.2s infinite ease-in-out; }
+        .sad-wiggle { animation: wiggle 2s infinite ease-in-out; }
+        .full-sad-droop { animation: pulse 1.5s infinite ease-in-out; }
+        .angry-shake { animation: shakeAngry 0.3s infinite ease-in-out; }
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px) scale(1.1); } }
+        @keyframes wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(0.92); opacity: 1; } }
+        @keyframes shakeAngry { 
+            0% { transform: translate(0, 0) rotate(0deg); } 
+            25% { transform: translate(-2px, 1px) rotate(-3deg); }
+            50% { transform: translate(2px, -1px) rotate(3deg); }
+            75% { transform: translate(-1px, -1px) rotate(-2deg); }
+            100% { transform: translate(1px, 2px) rotate(2deg); }
+        }
+
+        .fire-angry-wrapper {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: shakeAngry 0.25s infinite;
+        }
+
+        .flame-bg {
+            position: absolute;
+            top: -6px;
+            width: 36px;
+            height: 36px;
+            z-index: 1;
+            animation: flameGlow 0.6s infinite alternate ease-in-out;
+        }
+
+        .angry-face { position: relative; z-index: 2; font-size: 1.4rem; }
+
+        @keyframes flameGlow {
+            0% { transform: scale(0.9) translateY(0); opacity: 0.8; filter: drop-shadow(0 0 4px #ef4444); }
+            100% { transform: scale(1.15) translateY(-3px); opacity: 1; filter: drop-shadow(0 0 10px #f97316); }
+        }
+
+        .budget-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .budget-input { width: 100px; text-align: center; padding: 4px 6px; font-weight: 700; }
+
+        .progress-track {
+            width: 100%; height: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px; overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%; width: 0%;
+            background: var(--progress-color);
+            transition: width 0.4s ease, background-color 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .input-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .input-with-actions { display: flex; gap: 6px; }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            font-size: 1.1rem;
+        }
+
+        .mic-listening {
+            background: #ef4444 !important;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        .suggestions-box {
+            position: absolute; top: 52px; left: 12px; right: 12px;
+            background: #1e1b4b; border: 1px solid #6366f1;
+            border-radius: 8px; max-height: 160px; overflow-y: auto;
+            z-index: 1000; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+        }
+
+        .suggestion-item {
+            padding: 10px; display: flex; justify-content: space-between;
+            font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+        }
+
+        .row-two { display: flex; gap: 8px; }
+
+        .submit-btn {
+            background: var(--accent-gradient); color: white; border: none;
+            padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+
+        .list-item {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
+        }
+
+        .item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .item-name { font-size: 0.9rem; font-weight: 600; }
+        .completed-text { text-decoration: line-through; opacity: 0.4; }
+
+        .qty-picker {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(0, 0, 0, 0.25); padding: 4px 8px; border-radius: 8px;
+        }
+
+        .qty-btn { background: transparent; border: none; color: var(--text-main); width: 20px; height: 20px; cursor: pointer; font-weight: bold; }
+
+        .export-btn {
+            background: linear-gradient(135deg, #10b981, #059669); color: white;
+            border: none; padding: 12px; border-radius: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+        }
+
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; padding: 20px;
+            z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+        .modal-card {
+            background: var(--bg-body); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .modal-btn { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    </style>
 </head>
 <body>
 
@@ -61,7 +366,7 @@
             </div>
         </div>
 
-        <!-- Input Section with Voice & Barcode Buttons -->
+        <!-- Input Section -->
         <div class="input-card">
             <div class="input-with-actions">
                 <input type="text" id="itemName" placeholder="Item Name (e.g. Milk, Egg...)" oninput="filterSuggestions(this.value)">
@@ -118,699 +423,401 @@
             </div>
         </div>
     </div>
+        <script>
+        let audioCtx = null;
 
-</body>
-</html>
-<style>
-    :root {
-        --bg-body: #07090e;
-        --card-bg: rgba(255, 255, 255, 0.04);
-        --card-border: rgba(255, 255, 255, 0.09);
-        --text-main: #f8fafc;
-        --text-sub: #94a3b8;
-        --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
-        --danger: #ef4444;
-        --progress-color: #10b981;
-        --glow-color: rgba(16, 185, 129, 0.2);
-    }
-
-    .light-mode {
-        --bg-body: #f1f5f9;
-        --card-bg: rgba(255, 255, 255, 0.85);
-        --card-border: rgba(0, 0, 0, 0.08);
-        --text-main: #0f172a;
-        --text-sub: #64748b;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-        background-color: var(--bg-body);
-        height: 100dvh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: var(--text-main);
-        overflow: hidden;
-        transition: background-color 0.3s ease;
-    }
-
-    .app-frame {
-        width: 100%;
-        max-width: 420px;
-        height: 100dvh;
-        max-height: 880px;
-        background: var(--bg-body);
-        display: flex;
-        flex-direction: column;
-        padding: 16px;
-        gap: 12px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .app-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .app-title {
-        font-size: 1.35rem;
-        font-weight: 800;
-        background: var(--accent-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .icon-btn {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        color: var(--text-main);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-    }
-
-    .icon-btn:active, .submit-btn:active, .export-btn:active, .action-btn:active {
-        transform: scale(0.92);
-    }
-
-    .settings-bar {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        padding: 10px;
-        display: flex;
-        gap: 8px;
-        backdrop-filter: blur(12px);
-    }
-
-    .select-group {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .select-group label {
-        font-size: 0.68rem;
-        color: var(--text-sub);
-        text-transform: uppercase;
-        font-weight: 700;
-    }
-
-    select, input {
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid var(--card-border);
-        color: var(--text-main);
-        padding: 10px;
-        border-radius: 8px;
-        outline: none;
-        font-size: 0.9rem;
-        width: 100%;
-        transition: border-color 0.2s ease;
-    }
-
-    select:focus, input:focus {
-        border-color: #6366f1;
-    }
-
-    .budget-box {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        box-shadow: 0 8px 20px var(--glow-color);
-        transition: box-shadow 0.4s ease, border-color 0.4s ease;
-    }
-
-    .budget-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .mood-container {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .anim-emoji { font-size: 1.5rem; display: inline-block; }
-    .happy-bounce { animation: bounce 1.2s infinite ease-in-out; }
-    .sad-wiggle { animation: wiggle 2s infinite ease-in-out; }
-    .full-sad-droop { animation: pulse 1.5s infinite ease-in-out; }
-    .angry-shake { animation: shakeAngry 0.3s infinite ease-in-out; }
-
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px) scale(1.1); } }
-    @keyframes wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
-    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(0.92); opacity: 1; } }
-    @keyframes shakeAngry { 
-        0% { transform: translate(0, 0) rotate(0deg); } 
-        25% { transform: translate(-2px, 1px) rotate(-3deg); }
-        50% { transform: translate(2px, -1px) rotate(3deg); }
-        75% { transform: translate(-1px, -1px) rotate(-2deg); }
-        100% { transform: translate(1px, 2px) rotate(2deg); }
-    }
-
-    .fire-angry-wrapper {
-        position: relative;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        animation: shakeAngry 0.25s infinite;
-    }
-
-    .flame-bg {
-        position: absolute;
-        top: -6px;
-        width: 36px;
-        height: 36px;
-        z-index: 1;
-        animation: flameGlow 0.6s infinite alternate ease-in-out;
-    }
-
-    .angry-face { position: relative; z-index: 2; font-size: 1.4rem; }
-
-    @keyframes flameGlow {
-        0% { transform: scale(0.9) translateY(0); opacity: 0.8; filter: drop-shadow(0 0 4px #ef4444); }
-        100% { transform: scale(1.15) translateY(-3px); opacity: 1; filter: drop-shadow(0 0 10px #f97316); }
-    }
-
-    .budget-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-    .budget-input { width: 100px; text-align: center; padding: 4px 6px; font-weight: 700; }
-
-    .progress-track {
-        width: 100%; height: 12px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 10px; overflow: hidden;
-    }
-
-    .progress-fill {
-        height: 100%; width: 0%;
-        background: var(--progress-color);
-        transition: width 0.4s ease, background-color 0.3s ease;
-        border-radius: 10px;
-    }
-
-    .input-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        position: relative;
-    }
-
-    .input-with-actions { display: flex; gap: 6px; }
-
-    .action-btn {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid var(--card-border);
-        color: var(--text-main);
-        width: 42px;
-        height: 42px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-        font-size: 1.1rem;
-    }
-
-    .mic-listening {
-        background: #ef4444 !important;
-        animation: pulse 0.8s infinite alternate;
-    }
-
-    .suggestions-box {
-        position: absolute; top: 52px; left: 12px; right: 12px;
-        background: #1e1b4b; border: 1px solid #6366f1;
-        border-radius: 8px; max-height: 160px; overflow-y: auto;
-        z-index: 1000; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
-
-    .suggestion-item {
-        padding: 10px; display: flex; justify-content: space-between;
-        font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
-    }
-
-    .row-two { display: flex; gap: 8px; }
-
-    .submit-btn {
-        background: var(--accent-gradient); color: white; border: none;
-        padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
-        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-    }
-
-    .list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-
-    .list-item {
-        background: var(--card-bg); border: 1px solid var(--card-border);
-        padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
-    }
-
-    .item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .item-name { font-size: 0.9rem; font-weight: 600; }
-    .completed-text { text-decoration: line-through; opacity: 0.4; }
-
-    .qty-picker {
-        display: flex; align-items: center; gap: 6px;
-        background: rgba(0, 0, 0, 0.25); padding: 4px 8px; border-radius: 8px;
-    }
-
-    .qty-btn { background: transparent; border: none; color: var(--text-main); width: 20px; height: 20px; cursor: pointer; font-weight: bold; }
-
-    .export-btn {
-        background: linear-gradient(135deg, #10b981, #059669); color: white;
-        border: none; padding: 12px; border-radius: 12px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
-    }
-
-    .modal-overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
-        display: flex; justify-content: center; align-items: center; padding: 20px;
-        z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
-    }
-
-    .modal-overlay.active { opacity: 1; pointer-events: all; }
-
-    .modal-card {
-        background: var(--bg-body); border: 1px solid var(--card-border);
-        border-radius: 16px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px;
-    }
-
-    .modal-btn { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-</style>
-<script>
-    let audioCtx = null;
-
-    function getAudioContext() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        return audioCtx;
-    }
-
-    function playClick() {
-        try {
-            const ctx = getAudioContext();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
-            gain.gain.setValueAtTime(0.15, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.04);
-        } catch(e) {}
-    }
-
-    function playAlertSound() {
-        try {
-            const ctx = getAudioContext();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, ctx.currentTime);
-            osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.2, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.25);
-        } catch(e) {}
-    }
-
-    let shoppingList = JSON.parse(localStorage.getItem("smartCart_list")) || [];
-    let historyStore = JSON.parse(localStorage.getItem("smartCart_history")) || [];
-
-    const storeDatabase = [
-        { name: "Milk (1 Litre)", barcode: "8901234567890", rates: { PK: 210, IN: 60, US: 1.2 } },
-        { name: "Bread (Large)", barcode: "8909876543210", rates: { PK: 120, IN: 40, US: 2.5 } },
-        { name: "Egg", barcode: "8901122334455", rates: { PK: 30, IN: 7, US: 0.3 } },
-        { name: "Eggs (Dozen)", barcode: "8905544332211", rates: { PK: 320, IN: 90, US: 3.8 } },
-        { name: "Chicken (1 KG)", barcode: "8906677889900", rates: { PK: 600, IN: 240, US: 6.5 } }
-    ];
-
-    const countryToCurrency = { PK: "PKR", IN: "INR", US: "USD" };
-
-    function handleCountryChange() {
-        const country = document.getElementById("countrySelect").value;
-        document.getElementById("currencySelect").value = countryToCurrency[country];
-        render();
-    }
-
-    function filterSuggestions(val) {
-        const box = document.getElementById("suggestionsBox");
-        const country = document.getElementById("countrySelect").value;
-        const currency = document.getElementById("currencySelect").value;
-        if (!val.trim()) { box.style.display = "none"; return; }
-
-        const matches = storeDatabase.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
-        if (matches.length === 0) { box.style.display = "none"; return; }
-
-        box.innerHTML = "";
-        matches.forEach(item => {
-            const price = item.rates[country];
-            const div = document.createElement("div");
-            div.className = "suggestion-item";
-            div.innerHTML = `<span>${item.name}</span> <b>${currency} ${price}</b>`;
-            div.onclick = () => { playClick(); selectSuggestion(item.name, price); };
-            box.appendChild(div);
-        });
-        box.style.display = "block";
-    }
-
-    function selectSuggestion(name, price) {
-        document.getElementById("itemName").value = name;
-        document.getElementById("itemPrice").value = price;
-        document.getElementById("suggestionsBox").style.display = "none";
-    }
-
-    // --- FEATURE 1: VOICE SPEECH RECOGNITION ---
-    function startVoiceInput() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Speech recognition is not supported in this browser.");
-            return;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
         }
 
-        const recognition = new SpeechRecognition();
-        const micBtn = document.getElementById("micBtn");
-        recognition.lang = 'en-US';
-        recognition.start();
+        function playClick() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.04);
+            } catch(e) {}
+        }
 
-        micBtn.classList.add("mic-listening");
+        function playAlertSound() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, ctx.currentTime);
+                osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.25);
+            } catch(e) {}
+        }
 
-        recognition.onresult = (event) => {
-            micBtn.classList.remove("mic-listening");
-            const transcript = event.results[0][0].transcript;
-            
-            // Extract numbers for price if spoken (e.g., "Milk 200")
-            const words = transcript.split(" ");
-            let price = "";
-            let nameWords = [];
+        let shoppingList = JSON.parse(localStorage.getItem("smartCart_list")) || [];
+        let historyStore = JSON.parse(localStorage.getItem("smartCart_history")) || [];
 
-            words.forEach(w => {
-                if (!isNaN(w)) price = w;
-                else nameWords.push(w);
+        const storeDatabase = [
+            { name: "Milk (1 Litre)", barcode: "8901234567890", rates: { PK: 210, IN: 60, US: 1.2 } },
+            { name: "Bread (Large)", barcode: "8909876543210", rates: { PK: 120, IN: 40, US: 2.5 } },
+            { name: "Egg", barcode: "8901122334455", rates: { PK: 30, IN: 7, US: 0.3 } },
+            { name: "Eggs (Dozen)", barcode: "8905544332211", rates: { PK: 320, IN: 90, US: 3.8 } },
+            { name: "Chicken (1 KG)", barcode: "8906677889900", rates: { PK: 600, IN: 240, US: 6.5 } }
+        ];
+
+        const countryToCurrency = { PK: "PKR", IN: "INR", US: "USD" };
+
+        function handleCountryChange() {
+            const country = document.getElementById("countrySelect").value;
+            document.getElementById("currencySelect").value = countryToCurrency[country];
+            render();
+        }
+
+        function filterSuggestions(val) {
+            const box = document.getElementById("suggestionsBox");
+            const country = document.getElementById("countrySelect").value;
+            const currency = document.getElementById("currencySelect").value;
+            if (!val.trim()) { box.style.display = "none"; return; }
+
+            const matches = storeDatabase.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
+            if (matches.length === 0) { box.style.display = "none"; return; }
+
+            box.innerHTML = "";
+            matches.forEach(item => {
+                const price = item.rates[country];
+                const div = document.createElement("div");
+                div.className = "suggestion-item";
+                div.innerHTML = `<span>${item.name}</span> <b>${currency} ${price}</b>`;
+                div.onclick = () => { playClick(); selectSuggestion(item.name, price); };
+                box.appendChild(div);
             });
+            box.style.display = "block";
+        }
 
-            document.getElementById("itemName").value = nameWords.join(" ");
-            if (price) document.getElementById("itemPrice").value = price;
-        };
+        function selectSuggestion(name, price) {
+            document.getElementById("itemName").value = name;
+            if(price) document.getElementById("itemPrice").value = price;
+            document.getElementById("suggestionsBox").style.display = "none";
+        }
 
-        recognition.onerror = () => micBtn.classList.remove("mic-listening");
-        recognition.onend = () => micBtn.classList.remove("mic-listening");
-    }
+        function startVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
 
-    // --- FEATURE 2: BARCODE CAMERA SCANNER ---
-    let html5QrCode = null;
+            const recognition = new SpeechRecognition();
+            const micBtn = document.getElementById("micBtn");
+            recognition.lang = 'en-US';
+            recognition.start();
 
-    function startBarcodeScanner() {
-        document.getElementById("scannerModal").classList.add("active");
-        html5QrCode = new Html5Qrcode("reader");
+            micBtn.classList.add("mic-listening");
 
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 150 } },
-            (decodedText) => {
-                playClick();
+            recognition.onresult = (event) => {
+                micBtn.classList.remove("mic-listening");
+                const transcript = event.results[0][0].transcript;
+                
+                const words = transcript.split(" ");
+                let price = "";
+                let nameWords = [];
+
+                words.forEach(w => {
+                    if (!isNaN(w)) price = w;
+                    else nameWords.push(w);
+                });
+
+                document.getElementById("itemName").value = nameWords.join(" ");
+                if (price) document.getElementById("itemPrice").value = price;
+            };
+
+            recognition.onerror = () => micBtn.classList.remove("mic-listening");
+            recognition.onend = () => micBtn.classList.remove("mic-listening");
+        }
+
+        let html5QrCode = null;
+
+        function startBarcodeScanner() {
+            document.getElementById("scannerModal").classList.add("active");
+            const readerDiv = document.getElementById("reader");
+            readerDiv.innerHTML = "";
+
+            html5QrCode = new Html5Qrcode("reader");
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                async (decodedText) => {
+                    playClick();
+                    stopBarcodeScanner();
+
+                    const matchedItem = storeDatabase.find(i => i.barcode === decodedText);
+                    const country = document.getElementById("countrySelect").value;
+
+                    if (matchedItem) {
+                        selectSuggestion(matchedItem.name, matchedItem.rates[country]);
+                        return;
+                    }
+
+                    document.getElementById("itemName").value = "Fetching product details...";
+                    
+                    try {
+                        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+                        const data = await response.json();
+
+                        if (data.status === 1 && data.product) {
+                            const productName = data.product.product_name || data.product.product_name_en || "Scanned Product";
+                            const quantity = data.product.quantity ? ` (${data.product.quantity})` : "";
+                            
+                            document.getElementById("itemName").value = `${productName}${quantity}`;
+                        } else {
+                            document.getElementById("itemName").value = `Scanned Item (${decodedText})`;
+                        }
+                    } catch (err) {
+                        document.getElementById("itemName").value = `Scanned Item (${decodedText})`;
+                    }
+                },
+                (errorMessage) => {}
+            ).catch(err => {
                 stopBarcodeScanner();
-
-                const matchedItem = storeDatabase.find(i => i.barcode === decodedText);
-                const country = document.getElementById("countrySelect").value;
-
-                if (matchedItem) {
-                    selectSuggestion(matchedItem.name, matchedItem.rates[country]);
-                } else {
-                    document.getElementById("itemName").value = `Scanned Item (${decodedText})`;
-                }
-            },
-            () => {}
-        ).catch(err => {
-            alert("Camera permission denied or error starting scanner.");
-            stopBarcodeScanner();
-        });
-    }
-
-    function stopBarcodeScanner() {
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                document.getElementById("scannerModal").classList.remove("active");
-            }).catch(() => document.getElementById("scannerModal").classList.remove("active"));
-        } else {
-            document.getElementById("scannerModal").classList.remove("active");
-        }
-    }
-
-    // --- FEATURE 3: SHOPPING HISTORY TRACKING ---
-    function saveCurrentListToHistory() {
-        if (shoppingList.length === 0) return alert("Shopping list is empty!");
-        const curr = document.getElementById("currencySelect").value;
-        const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        
-        const historyRecord = {
-            id: Date.now(),
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            total: `${curr} ${total}`,
-            items: [...shoppingList]
-        };
-
-        historyStore.unshift(historyRecord);
-        localStorage.setItem("smartCart_history", JSON.stringify(historyStore));
-        alert("Receipt saved to History successfully!");
-    }
-
-    function toggleHistoryModal() {
-        const modal = document.getElementById("historyModal");
-        const container = document.getElementById("historyListContainer");
-        modal.classList.toggle("active");
-
-        if (modal.classList.contains("active")) {
-            container.innerHTML = "";
-            if (historyStore.length === 0) {
-                container.innerHTML = "<p style='color:var(--text-sub); text-align:center;'>No past shopping records found.</p>";
-                return;
-            }
-
-            historyStore.forEach(record => {
-                const card = document.createElement("div");
-                card.style.cssText = "background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid var(--card-border);";
-                card.innerHTML = `
-                    <div style="display:flex; justify-space-between; font-weight:bold; font-size:0.85rem;">
-                        <span>📅 ${record.date}</span>
-                        <span style="color:#10b981">${record.total}</span>
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;">
-                        ${record.items.map(i => i.name).join(", ")}
-                    </div>
-                `;
-                container.appendChild(card);
             });
         }
-    }
 
-    function addItem() {
-        const nameEl = document.getElementById("itemName");
-        const qtyEl = document.getElementById("itemQty");
-        const priceEl = document.getElementById("itemPrice");
-
-        const name = nameEl.value.trim();
-        const qty = parseInt(qtyEl.value) || 1;
-        const price = parseFloat(priceEl.value) || 0;
-
-        if (!name) return alert("Please enter item name!");
-
-        const currentTotal = shoppingList.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-        const projectedCost = price * qty;
-        const curr = document.getElementById("currencySelect").value;
-
-        if (budgetLimit > 0 && (currentTotal + projectedCost) > budgetLimit) {
-            playAlertSound();
-            showWarning(`Adding "${name}" (${curr} ${projectedCost}) exceeds your budget limit.`);
-            return;
+        function stopBarcodeScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    document.getElementById("scannerModal").classList.remove("active");
+                    html5QrCode = null;
+                }).catch(() => {
+                    document.getElementById("scannerModal").classList.remove("active");
+                    html5QrCode = null;
+                });
+            } else {
+                document.getElementById("scannerModal").classList.remove("active");
+            }
         }
 
-        shoppingList.push({ id: Date.now(), name, qty, price, completed: false });
-        nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1;
-        document.getElementById("suggestionsBox").style.display = "none";
-        saveAndRender();
-    }
+        function saveCurrentListToHistory() {
+            if (shoppingList.length === 0) return alert("Shopping list is empty!");
+            const curr = document.getElementById("currencySelect").value;
+            const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            const historyRecord = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                total: `${curr} ${total}`,
+                items: [...shoppingList]
+            };
 
-    function toggleComplete(id) {
-        playClick();
-        const item = shoppingList.find(i => i.id === id);
-        if (item) { item.completed = !item.completed; saveAndRender(); }
-    }
+            historyStore.unshift(historyRecord);
+            localStorage.setItem("smartCart_history", JSON.stringify(historyStore));
+            alert("Receipt saved to History!");
+        }
 
-    function updateQty(id, delta) {
-        playClick();
-        const item = shoppingList.find(i => i.id === id);
-        if (!item) return;
+        function toggleHistoryModal() {
+            const modal = document.getElementById("historyModal");
+            const container = document.getElementById("historyListContainer");
+            modal.classList.toggle("active");
 
-        if (delta > 0) {
+            if (modal.classList.contains("active")) {
+                container.innerHTML = "";
+                if (historyStore.length === 0) {
+                    container.innerHTML = "<p style='color:var(--text-sub); text-align:center;'>No past records found.</p>";
+                    return;
+                }
+
+                historyStore.forEach(record => {
+                    const card = document.createElement("div");
+                    card.style.cssText = "background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid var(--card-border);";
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.85rem;">
+                            <span>📅 ${record.date}</span>
+                            <span style="color:#10b981">${record.total}</span>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;">
+                            ${record.items.map(i => i.name).join(", ")}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        function addItem() {
+            const nameEl = document.getElementById("itemName");
+            const qtyEl = document.getElementById("itemQty");
+            const priceEl = document.getElementById("itemPrice");
+
+            const name = nameEl.value.trim();
+            const qty = parseInt(qtyEl.value) || 1;
+            const price = parseFloat(priceEl.value) || 0;
+
+            if (!name) return alert("Please enter item name!");
+
             const currentTotal = shoppingList.reduce((sum, i) => sum + (i.price * i.qty), 0);
             const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-            if (budgetLimit > 0 && (currentTotal + item.price) > budgetLimit) {
+            const projectedCost = price * qty;
+            const curr = document.getElementById("currencySelect").value;
+
+            if (budgetLimit > 0 && (currentTotal + projectedCost) > budgetLimit) {
                 playAlertSound();
-                showWarning("Budget limit reached!");
+                showWarning(`Adding "${name}" (${curr} ${projectedCost}) exceeds your budget limit.`);
                 return;
             }
+
+            shoppingList.push({ id: Date.now(), name, qty, price, completed: false });
+            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1;
+            document.getElementById("suggestionsBox").style.display = "none";
+            saveAndRender();
         }
-        item.qty = Math.max(1, item.qty + delta);
-        saveAndRender();
-    }
 
-    function deleteItem(id) {
-        playClick();
-        shoppingList = shoppingList.filter(i => i.id !== id);
-        saveAndRender();
-    }
+        function toggleComplete(id) {
+            playClick();
+            const item = shoppingList.find(i => i.id === id);
+            if (item) { item.completed = !item.completed; saveAndRender(); }
+        }
 
-    function shareToWhatsApp() {
-        if (shoppingList.length === 0) return alert("Shopping list is empty!");
-        const curr = document.getElementById("currencySelect").value;
-        let text = `🛒 *Shopping List*\n----------------------------\n`;
-        let total = 0;
-        shoppingList.forEach((item, index) => {
-            const itemTotal = item.price * item.qty;
-            total += itemTotal;
-            text += `${index + 1}. *${item.name}* (x${item.qty}) - ${curr} ${itemTotal}\n`;
-        });
-        text += `----------------------------\n💰 *Total:* ${curr} ${total}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-    }
+        function updateQty(id, delta) {
+            playClick();
+            const item = shoppingList.find(i => i.id === id);
+            if (!item) return;
 
-    function showWarning(msg) {
-        document.getElementById("modalMsg").innerText = msg;
-        document.getElementById("warningModal").classList.add("active");
-    }
+            if (delta > 0) {
+                const currentTotal = shoppingList.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
+                if (budgetLimit > 0 && (currentTotal + item.price) > budgetLimit) {
+                    playAlertSound();
+                    showWarning("Budget limit reached!");
+                    return;
+                }
+            }
+            item.qty = Math.max(1, item.qty + delta);
+            saveAndRender();
+        }
 
-    function closeModal() {
-        document.getElementById("warningModal").classList.remove("active");
-    }
+        function deleteItem(id) {
+            playClick();
+            shoppingList = shoppingList.filter(i => i.id !== id);
+            saveAndRender();
+        }
 
-    function saveAndRender() {
-        localStorage.setItem("smartCart_list", JSON.stringify(shoppingList));
+        function shareToWhatsApp() {
+            if (shoppingList.length === 0) return alert("Shopping list is empty!");
+            const curr = document.getElementById("currencySelect").value;
+            let text = `🛒 *Shopping List*\n----------------------------\n`;
+            let total = 0;
+            shoppingList.forEach((item, index) => {
+                const itemTotal = item.price * item.qty;
+                total += itemTotal;
+                text += `${index + 1}. *${item.name}* (x${item.qty}) - ${curr} ${itemTotal}\n`;
+            });
+            text += `----------------------------\n💰 *Total:* ${curr} ${total}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function showWarning(msg) {
+            document.getElementById("modalMsg").innerText = msg;
+            document.getElementById("warningModal").classList.add("active");
+        }
+
+        function closeModal() {
+            document.getElementById("warningModal").classList.remove("active");
+        }
+
+        function saveAndRender() {
+            localStorage.setItem("smartCart_list", JSON.stringify(shoppingList));
+            render();
+        }
+
+        function render() {
+            const listBody = document.getElementById("listBody");
+            const selectedCurrency = document.getElementById("currencySelect").value;
+            document.querySelectorAll(".curr-symbol").forEach(el => el.innerText = selectedCurrency);
+
+            listBody.innerHTML = "";
+            shoppingList.forEach((item) => {
+                const itemEl = document.createElement("div");
+                itemEl.className = "list-item";
+                itemEl.innerHTML = `
+                    <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleComplete(${item.id})">
+                    <div class="item-info">
+                        <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
+                        <span style="font-size:0.75rem; color:var(--text-sub);">${selectedCurrency} ${item.price * item.qty}</span>
+                    </div>
+                    <div class="qty-picker">
+                        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                        <span style="font-size:0.85rem">${item.qty}</span>
+                        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                    </div>
+                    <button class="qty-btn" style="color:var(--danger); margin-left: 4px;" onclick="deleteItem(${item.id})">✕</button>
+                `;
+                listBody.appendChild(itemEl);
+            });
+
+            const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
+            document.getElementById("totalSpent").innerText = `${selectedCurrency} ${total}`;
+
+            const percent = budgetLimit > 0 ? Math.min(100, Math.round((total / budgetLimit) * 100)) : 0;
+            const bar = document.getElementById("progressBar");
+            const moodBox = document.getElementById("moodContainer");
+            const budgetBox = document.getElementById("budgetBox");
+
+            bar.style.width = `${percent}%`;
+            document.getElementById("progressPercent").innerText = `${percent}% Used`;
+
+            if (percent < 30) {
+                bar.style.backgroundColor = "#10b981";
+                bar.style.boxShadow = "0 0 10px rgba(16, 185, 129, 0.5)";
+                budgetBox.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                budgetBox.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.15)";
+                moodBox.innerHTML = `<span class="anim-emoji happy-bounce">😊</span>`;
+            } else if (percent < 60) {
+                bar.style.backgroundColor = "#facc15";
+                bar.style.boxShadow = "0 0 10px rgba(250, 204, 21, 0.5)";
+                budgetBox.style.borderColor = "rgba(250, 204, 21, 0.3)";
+                budgetBox.style.boxShadow = "0 8px 20px rgba(250, 204, 21, 0.15)";
+                moodBox.innerHTML = `<span class="anim-emoji sad-wiggle">😟</span>`;
+            } else if (percent < 80) {
+                bar.style.backgroundColor = "#f97316";
+                bar.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.5)";
+                budgetBox.style.borderColor = "rgba(249, 115, 22, 0.4)";
+                budgetBox.style.boxShadow = "0 8px 20px rgba(249, 115, 22, 0.2)";
+                moodBox.innerHTML = `<span class="anim-emoji full-sad-droop">😢</span>`;
+            } else {
+                bar.style.backgroundColor = "#ef4444";
+                bar.style.boxShadow = "0 0 14px rgba(239, 68, 68, 0.8)";
+                budgetBox.style.borderColor = "rgba(239, 68, 68, 0.6)";
+                budgetBox.style.boxShadow = "0 8px 24px rgba(239, 68, 68, 0.35)";
+                moodBox.innerHTML = `
+                    <div class="fire-angry-wrapper">
+                        <svg class="flame-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 23C16.4183 23 20 19.4183 20 15C20 11.5 17.5 8.5 15 6C15 8.5 13.5 10 12 10C10.5 10 9.5 8.5 10 6C7.5 8.5 4 11.5 4 15C4 19.4183 7.58172 23 12 23Z" fill="url(#flameGrad)"/>
+                            <defs>
+                                <linearGradient id="flameGrad" x1="12" y1="6" x2="12" y2="23" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#FFD700"/>
+                                    <stop offset="0.5" stop-color="#FF4500"/>
+                                    <stop offset="1" stop-color="#B22222"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="angry-face">😡</span>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("light-mode");
+        }
+
         render();
-    }
-
-    function render() {
-        const listBody = document.getElementById("listBody");
-        const selectedCurrency = document.getElementById("currencySelect").value;
-        document.querySelectorAll(".curr-symbol").forEach(el => el.innerText = selectedCurrency);
-
-        listBody.innerHTML = "";
-        shoppingList.forEach((item) => {
-            const itemEl = document.createElement("div");
-            itemEl.className = "list-item";
-            itemEl.innerHTML = `
-                <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleComplete(${item.id})">
-                <div class="item-info">
-                    <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
-                    <span style="font-size:0.75rem; color:var(--text-sub);">${selectedCurrency} ${item.price * item.qty}</span>
-                </div>
-                <div class="qty-picker">
-                    <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                    <span style="font-size:0.85rem">${item.qty}</span>
-                    <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-                </div>
-                <button class="qty-btn" style="color:var(--danger); margin-left: 4px;" onclick="deleteItem(${item.id})">✕</button>
-            `;
-            listBody.appendChild(itemEl);
-        });
-
-        const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-        document.getElementById("totalSpent").innerText = `${selectedCurrency} ${total}`;
-
-        const percent = budgetLimit > 0 ? Math.min(100, Math.round((total / budgetLimit) * 100)) : 0;
-        const bar = document.getElementById("progressBar");
-        const moodBox = document.getElementById("moodContainer");
-        const budgetBox = document.getElementById("budgetBox");
-
-        bar.style.width = `${percent}%`;
-        document.getElementById("progressPercent").innerText = `${percent}% Used`;
-
-        if (percent < 30) {
-            bar.style.backgroundColor = "#10b981";
-            bar.style.boxShadow = "0 0 10px rgba(16, 185, 129, 0.5)";
-            budgetBox.style.borderColor = "rgba(16, 185, 129, 0.3)";
-            budgetBox.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.15)";
-            moodBox.innerHTML = `<span class="anim-emoji happy-bounce">😊</span>`;
-        } else if (percent < 60) {
-            bar.style.backgroundColor = "#facc15";
-            bar.style.boxShadow = "0 0 10px rgba(250, 204, 21, 0.5)";
-            budgetBox.style.borderColor = "rgba(250, 204, 21, 0.3)";
-            budgetBox.style.boxShadow = "0 8px 20px rgba(250, 204, 21, 0.15)";
-            moodBox.innerHTML = `<span class="anim-emoji sad-wiggle">😟</span>`;
-        } else if (percent < 80) {
-            bar.style.backgroundColor = "#f97316";
-            bar.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.5)";
-            budgetBox.style.borderColor = "rgba(249, 115, 22, 0.4)";
-            budgetBox.style.boxShadow = "0 8px 20px rgba(249, 115, 22, 0.2)";
-            moodBox.innerHTML = `<span class="anim-emoji full-sad-droop">😢</span>`;
-        } else {
-            bar.style.backgroundColor = "#ef4444";
-            bar.style.boxShadow = "0 0 14px rgba(239, 68, 68, 0.8)";
-            budgetBox.style.borderColor = "rgba(239, 68, 68, 0.6)";
-            budgetBox.style.boxShadow = "0 8px 24px rgba(239, 68, 68, 0.35)";
-            moodBox.innerHTML = `
-                <div class="fire-angry-wrapper">
-                    <svg class="flame-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 23C16.4183 23 20 19.4183 20 15C20 11.5 17.5 8.5 15 6C15 8.5 13.5 10 12 10C10.5 10 9.5 8.5 10 6C7.5 8.5 4 11.5 4 15C4 19.4183 7.58172 23 12 23Z" fill="url(#flameGrad)"/>
-                        <defs>
-                            <linearGradient id="flameGrad" x1="12" y1="6" x2="12" y2="23" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#FFD700"/>
-                                <stop offset="0.5" stop-color="#FF4500"/>
-                                <stop offset="1" stop-color="#B22222"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span class="angry-face">😡</span>
-                </div>
-            `;
-        }
-    }
-
-    function toggleTheme() {
-        document.body.classList.toggle("light-mode");
-    }
-
-    // --- FEATURE 4: PWA SERVICE WORKER REGISTRATION ---
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
-        });
-    }
-
-    render();
-</script>
+    </script>
+</body>
+</html>
