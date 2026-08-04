@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Cart Pro - Local DB Edition</title>
+    <title>Smart Cart Pro - API Edition</title>
     <!-- Camera Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
@@ -280,6 +280,11 @@
             padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
         }
 
+        .product-thumb {
+            width: 36px; height: 36px; object-fit: contain;
+            border-radius: 6px; background: rgba(255, 255, 255, 0.9); padding: 2px;
+        }
+
         .item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
         .item-name { font-size: 0.9rem; font-weight: 600; }
         .completed-text { text-decoration: line-through; opacity: 0.4; }
@@ -370,7 +375,8 @@
         <!-- Input Section -->
         <div class="input-card">
             <div class="input-with-actions">
-                <input type="text" id="itemName" placeholder="Item Name (e.g. Olpers, Lays...)" oninput="filterSuggestions(this.value)">
+                <input type="text" id="itemName" placeholder="Item Name (e.g. Olpers, Aquafina...)" oninput="filterSuggestions(this.value)">
+                <input type="hidden" id="itemImg">
                 <button class="action-btn mic-btn" id="micBtn" onclick="playClick(); startVoiceInput();" title="Voice Search">🎤</button>
                 <button class="action-btn scan-btn" onclick="playClick(); startBarcodeScanner();" title="Scan Barcode">📷</button>
             </div>
@@ -438,8 +444,8 @@
                 <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
-                </div>
-                        <script>
+                    </div>
+        <script>
         let audioCtx = null;
 
         function getAudioContext() {
@@ -483,16 +489,14 @@
 
         // Predefined local database
         const defaultDatabase = [
+            { name: "Aquafina Water (500ml)", barcode: "012000016331", img: "https://images.openfoodfacts.org/images/products/001/200/001/6331/front_en.3.200.jpg", rates: { PK: 60, IN: 20, US: 0.5 } },
             { name: "Olper's Milk (1 Litre)", barcode: "8964000120102", rates: { PK: 290, IN: 80, US: 1.1 } },
             { name: "MilkPak (1 Litre)", barcode: "8964000100012", rates: { PK: 295, IN: 82, US: 1.15 } },
             { name: "Tapal Danedar (950g)", barcode: "8964000210012", rates: { PK: 1450, IN: 400, US: 5.2 } },
             { name: "Lays Masala (Large)", barcode: "8964001100551", rates: { PK: 100, IN: 30, US: 0.4 } },
             { name: "Bisconni Chocolatto", barcode: "8964002201122", rates: { PK: 50, IN: 15, US: 0.2 } },
             { name: "Coca Cola (1.5 Litre)", barcode: "5449000000996", rates: { PK: 180, IN: 50, US: 0.8 } },
-            { name: "Pepsi (1.5 Litre)", barcode: "012000000133", rates: { PK: 175, IN: 48, US: 0.75 } },
-            { name: "Dawn Bread (Large)", barcode: "8964000300111", rates: { PK: 140, IN: 40, US: 0.5 } },
-            { name: "Eggs (Dozen)", barcode: "896000000001", rates: { PK: 320, IN: 90, US: 1.2 } },
-            { name: "Chicken Meat (1 KG)", barcode: "896000000002", rates: { PK: 620, IN: 220, US: 2.5 } }
+            { name: "Pepsi (1.5 Litre)", barcode: "012000000133", rates: { PK: 175, IN: 48, US: 0.75 } }
         ];
 
         let localCustomDB = JSON.parse(localStorage.getItem("smartCart_customDB")) || [];
@@ -525,15 +529,16 @@
                 const div = document.createElement("div");
                 div.className = "suggestion-item";
                 div.innerHTML = `<span>${item.name}</span> <b>${currency} ${price}</b>`;
-                div.onclick = () => { playClick(); selectSuggestion(item.name, price); };
+                div.onclick = () => { playClick(); selectSuggestion(item.name, price, item.img || ""); };
                 box.appendChild(div);
             });
             box.style.display = "block";
         }
 
-        function selectSuggestion(name, price) {
+        function selectSuggestion(name, price, img = "") {
             document.getElementById("itemName").value = name;
-            if(price) document.getElementById("itemPrice").value = price;
+            if (price) document.getElementById("itemPrice").value = price;
+            document.getElementById("itemImg").value = img;
             document.getElementById("suggestionsBox").style.display = "none";
         }
 
@@ -590,21 +595,41 @@
                     const matchedItem = db.find(i => i.barcode === cleanBarcode);
                     const country = document.getElementById("countrySelect").value;
 
+                    // 1. Direct Local Match
                     if (matchedItem) {
                         const price = matchedItem.rates[country] || matchedItem.rates['PK'] || 0;
-                        selectSuggestion(matchedItem.name, price);
+                        selectSuggestion(matchedItem.name, price, matchedItem.img || "");
                         return;
                     }
 
-                    document.getElementById("newBarcodeVal").value = cleanBarcode;
-                    document.getElementById("newProductName").value = "";
-                    document.getElementById("newProductPrice").value = "";
-                    document.getElementById("customBarcodeModal").classList.add("active");
+                    // 2. Open Food Facts API Call (Bina Key Direct Fetch)
+                    fetch(`https://world.openfoodfacts.org/api/v0/product/${cleanBarcode}.json`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 1 && data.product) {
+                                const prod = data.product;
+                                const fetchedName = prod.product_name || prod.generic_name || "Scanned Item";
+                                const fetchedImg = prod.image_front_small_url || prod.image_url || "";
+                                const defaultPrice = 60; // Estimated fallback rate
+
+                                selectSuggestion(fetchedName, defaultPrice, fetchedImg);
+                            } else {
+                                openCustomModal(cleanBarcode);
+                            }
+                        })
+                        .catch(() => openCustomModal(cleanBarcode));
                 },
                 (errorMessage) => {}
             ).catch(err => {
                 stopBarcodeScanner();
             });
+        }
+
+        function openCustomModal(barcode) {
+            document.getElementById("newBarcodeVal").value = barcode;
+            document.getElementById("newProductName").value = "";
+            document.getElementById("newProductPrice").value = "";
+            document.getElementById("customBarcodeModal").classList.add("active");
         }
 
         function stopBarcodeScanner() {
@@ -621,7 +646,7 @@
                 document.getElementById("scannerModal").classList.remove("active");
             }
         }
-               function saveCustomBarcodeToDB() {
+                    function saveCustomBarcodeToDB() {
             const barcode = document.getElementById("newBarcodeVal").value;
             const name = document.getElementById("newProductName").value.trim();
             const price = parseFloat(document.getElementById("newProductPrice").value) || 0;
@@ -631,13 +656,14 @@
             const newEntry = {
                 name: name,
                 barcode: barcode,
+                img: "",
                 rates: { PK: price, IN: Math.round(price/3.5), US: (price/278).toFixed(2) }
             };
 
             localCustomDB.push(newEntry);
             localStorage.setItem("smartCart_customDB", JSON.stringify(localCustomDB));
 
-            selectSuggestion(name, price);
+            selectSuggestion(name, price, "");
             closeCustomModal();
         }
 
@@ -669,7 +695,7 @@
 
             if (modal.classList.contains("active")) {
                 container.innerHTML = "";
-                if (historyStore.length ===0) {
+                if (historyStore.length === 0) {
                     container.innerHTML = "<p style='color:var(--text-sub); text-align:center;'>No past records found.</p>";
                     return;
                 }
@@ -695,10 +721,12 @@
             const nameEl = document.getElementById("itemName");
             const qtyEl = document.getElementById("itemQty");
             const priceEl = document.getElementById("itemPrice");
+            const imgEl = document.getElementById("itemImg");
 
             const name = nameEl.value.trim();
             const qty = parseInt(qtyEl.value) || 1;
             const price = parseFloat(priceEl.value) || 0;
+            const img = imgEl.value || "";
 
             if (!name) return alert("Please enter item name!");
 
@@ -713,8 +741,8 @@
                 return;
             }
 
-            shoppingList.push({ id: Date.now(), name, qty, price, completed: false });
-            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1;
+            shoppingList.push({ id: Date.now(), name, qty, price, img, completed: false });
+            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1; imgEl.value = "";
             document.getElementById("suggestionsBox").style.display = "none";
             saveAndRender();
         }
@@ -788,6 +816,7 @@
                 itemEl.className = "list-item";
                 itemEl.innerHTML = `
                     <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleComplete(${item.id})">
+                    ${item.img ? `<img src="${item.img}" class="product-thumb" alt="prod">` : `<div style="width:36px;height:36px;display:grid;place-items:center;background:rgba(255,255,255,0.05);border-radius:6px;font-size:0.8rem;">📦</div>`}
                     <div class="item-info">
                         <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
                         <span style="font-size:0.75rem; color:var(--text-sub);">${selectedCurrency} ${item.price * item.qty}</span>
