@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Cart Pro</title>
+    <title>Smart Cart Pro - Local DB Edition</title>
     <!-- Camera Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
@@ -15,6 +15,7 @@
             --text-sub: #94a3b8;
             --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
             --danger: #ef4444;
+            --success: #10b981;
             --progress-color: #10b981;
             --glow-color: rgba(16, 185, 129, 0.2);
         }
@@ -369,7 +370,7 @@
         <!-- Input Section -->
         <div class="input-card">
             <div class="input-with-actions">
-                <input type="text" id="itemName" placeholder="Item Name (e.g. Milk, Egg...)" oninput="filterSuggestions(this.value)">
+                <input type="text" id="itemName" placeholder="Item Name (e.g. Olpers, Lays...)" oninput="filterSuggestions(this.value)">
                 <button class="action-btn mic-btn" id="micBtn" onclick="playClick(); startVoiceInput();" title="Voice Search">🎤</button>
                 <button class="action-btn scan-btn" onclick="playClick(); startBarcodeScanner();" title="Scan Barcode">📷</button>
             </div>
@@ -405,6 +406,21 @@
             </div>
         </div>
 
+        <!-- Save Custom Barcode Modal -->
+        <div class="modal-overlay" id="customBarcodeModal">
+            <div class="modal-card" style="width: 100%; max-width: 360px;">
+                <div class="modal-title" style="font-weight:bold; color:#6366f1;">📦 New Barcode Found!</div>
+                <p style="font-size:0.8rem; color:var(--text-sub);">Is barcode ko local database me save karein?</p>
+                <input type="text" id="newBarcodeVal" readonly style="opacity:0.6; text-align:center; font-weight:bold;">
+                <input type="text" id="newProductName" placeholder="Product Name (e.g. Tapal Tea)">
+                <input type="number" id="newProductPrice" placeholder="Price (PKR)">
+                <div style="display:flex; gap:8px;">
+                    <button class="modal-btn" style="flex:1; background:var(--success);" onclick="saveCustomBarcodeToDB();">Save to DB</button>
+                    <button class="modal-btn" style="flex:1; background:var(--text-sub);" onclick="closeCustomModal();">Skip</button>
+                </div>
+            </div>
+        </div>
+
         <!-- History Modal Overlay -->
         <div class="modal-overlay" id="historyModal">
             <div class="modal-card" style="width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto;">
@@ -422,7 +438,7 @@
                 <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
-    </div>
+                    </div>
         <script>
         let audioCtx = null;
 
@@ -465,13 +481,25 @@
         let shoppingList = JSON.parse(localStorage.getItem("smartCart_list")) || [];
         let historyStore = JSON.parse(localStorage.getItem("smartCart_history")) || [];
 
-        const storeDatabase = [
-            { name: "Milk (1 Litre)", barcode: "8901234567890", rates: { PK: 210, IN: 60, US: 1.2 } },
-            { name: "Bread (Large)", barcode: "8909876543210", rates: { PK: 120, IN: 40, US: 2.5 } },
-            { name: "Egg", barcode: "8901122334455", rates: { PK: 30, IN: 7, US: 0.3 } },
-            { name: "Eggs (Dozen)", barcode: "8905544332211", rates: { PK: 320, IN: 90, US: 3.8 } },
-            { name: "Chicken (1 KG)", barcode: "8906677889900", rates: { PK: 600, IN: 240, US: 6.5 } }
+        // Dynamic local database (Predefined + User Saved)
+        const defaultDatabase = [
+            { name: "Olper's Milk (1 Litre)", barcode: "8964000120102", rates: { PK: 290, IN: 80, US: 1.1 } },
+            { name: "MilkPak (1 Litre)", barcode: "8964000100012", rates: { PK: 295, IN: 82, US: 1.15 } },
+            { name: "Tapal Danedar (950g)", barcode: "8964000210012", rates: { PK: 1450, IN: 400, US: 5.2 } },
+            { name: "Lays Masala (Large)", barcode: "8964001100551", rates: { PK: 100, IN: 30, US: 0.4 } },
+            { name: "Bisconni Chocolatto", barcode: "8964002201122", rates: { PK: 50, IN: 15, US: 0.2 } },
+            { name: "Coca Cola (1.5 Litre)", barcode: "5449000000996", rates: { PK: 180, IN: 50, US: 0.8 } },
+            { name: "Pepsi (1.5 Litre)", barcode: "012000000133", rates: { PK: 175, IN: 48, US: 0.75 } },
+            { name: "Dawn Bread (Large)", barcode: "8964000300111", rates: { PK: 140, IN: 40, US: 0.5 } },
+            { name: "Eggs (Dozen)", barcode: "896000000001", rates: { PK: 320, IN: 90, US: 1.2 } },
+            { name: "Chicken Meat (1 KG)", barcode: "896000000002", rates: { PK: 620, IN: 220, US: 2.5 } }
         ];
+
+        let localCustomDB = JSON.parse(localStorage.getItem("smartCart_customDB")) || [];
+        
+        function getCombinedDatabase() {
+            return [...defaultDatabase, ...localCustomDB];
+        }
 
         const countryToCurrency = { PK: "PKR", IN: "INR", US: "USD" };
 
@@ -487,12 +515,13 @@
             const currency = document.getElementById("currencySelect").value;
             if (!val.trim()) { box.style.display = "none"; return; }
 
-            const matches = storeDatabase.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
+            const db = getCombinedDatabase();
+            const matches = db.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
             if (matches.length === 0) { box.style.display = "none"; return; }
 
             box.innerHTML = "";
             matches.forEach(item => {
-                const price = item.rates[country];
+                const price = item.rates[country] || item.rates['PK'] || 0;
                 const div = document.createElement("div");
                 div.className = "suggestion-item";
                 div.innerHTML = `<span>${item.name}</span> <b>${currency} ${price}</b>`;
@@ -551,36 +580,28 @@
 
             html5QrCode.start(
                 { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 150 } },
-                async (decodedText) => {
+                { fps: 15, qrbox: { width: 250, height: 150 } },
+                (decodedText) => {
                     playClick();
                     stopBarcodeScanner();
 
-                    const matchedItem = storeDatabase.find(i => i.barcode === decodedText);
+                    const cleanBarcode = decodedText.trim();
+                    const db = getCombinedDatabase();
+                    const matchedItem = db.find(i => i.barcode === cleanBarcode);
                     const country = document.getElementById("countrySelect").value;
 
+                    // 1. Direct Local Database Hit
                     if (matchedItem) {
-                        selectSuggestion(matchedItem.name, matchedItem.rates[country]);
+                        const price = matchedItem.rates[country] || matchedItem.rates['PK'] || 0;
+                        selectSuggestion(matchedItem.name, price);
                         return;
                     }
 
-                    document.getElementById("itemName").value = "Fetching product details...";
-                    
-                    try {
-                        const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
-                        const data = await response.json();
-
-                        if (data.status === 1 && data.product) {
-                            const productName = data.product.product_name || data.product.product_name_en || "Scanned Product";
-                            const quantity = data.product.quantity ? ` (${data.product.quantity})` : "";
-                            
-                            document.getElementById("itemName").value = `${productName}${quantity}`;
-                        } else {
-                            document.getElementById("itemName").value = `Scanned Item (${decodedText})`;
-                        }
-                    } catch (err) {
-                        document.getElementById("itemName").value = `Scanned Item (${decodedText})`;
-                    }
+                    // 2. Open Custom Add Modal if barcode not in DB
+                    document.getElementById("newBarcodeVal").value = cleanBarcode;
+                    document.getElementById("newProductName").value = "";
+                    document.getElementById("newProductPrice").value = "";
+                    document.getElementById("customBarcodeModal").classList.add("active");
                 },
                 (errorMessage) => {}
             ).catch(err => {
@@ -601,6 +622,31 @@
             } else {
                 document.getElementById("scannerModal").classList.remove("active");
             }
+        }
+
+        function saveCustomBarcodeToDB() {
+            const barcode = document.getElementById("newBarcodeVal").value;
+            const name = document.getElementById("newProductName").value.trim();
+            const price = parseFloat(document.getElementById("newProductPrice").value) || 0;
+
+            if (!name) return alert("Product name enter karein!");
+
+            const newEntry = {
+                name: name,
+                barcode: barcode,
+                rates: { PK: price, IN: Math.round(price/3.5), US: (price/278).toFixed(2) }
+            };
+
+            localCustomDB.push(newEntry);
+            localStorage.setItem("smartCart_customDB", JSON.stringify(localCustomDB));
+
+            // Select directly for current form
+            selectSuggestion(name, price);
+            closeCustomModal();
+        }
+
+        function closeCustomModal() {
+            document.getElementById("customBarcodeModal").classList.remove("active");
         }
 
         function saveCurrentListToHistory() {
@@ -788,7 +834,7 @@
                 bar.style.backgroundColor = "#f97316";
                 bar.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.5)";
                 budgetBox.style.borderColor = "rgba(249, 115, 22, 0.4)";
-                budgetBox.style.boxShadow = "0 8px 20px rgba(249, 115, 22, 0.2)";
+                budgetBox.style.boxShadow = "0 8px 24px rgba(249, 115, 22, 0.2)";
                 moodBox.innerHTML = `<span class="anim-emoji full-sad-droop">😢</span>`;
             } else {
                 bar.style.backgroundColor = "#ef4444";
@@ -807,17 +853,4 @@
                                 </linearGradient>
                             </defs>
                         </svg>
-                        <span class="angry-face">😡</span>
-                    </div>
-                `;
-            }
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle("light-mode");
-        }
-
-        render();
-    </script>
-</body>
-</html>
+                        <span class="angry-f
