@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Cart Pro - API Edition</title>
-    <!-- Camera Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <title>Smart Cart Pro - AI Assistant</title>
     <style>
         :root {
-            --bg-body: #07090e;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --card-border: rgba(255, 255, 255, 0.09);
+            --bg-body: #05070b;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            --glow-color: rgba(99, 102, 241, 0.15);
             --danger: #ef4444;
             --success: #10b981;
-            --progress-color: #10b981;
-            --glow-color: rgba(16, 185, 129, 0.2);
         }
 
         .light-mode {
@@ -51,8 +48,10 @@
             width: 100%;
             max-width: 420px;
             height: 100dvh;
-            max-height: 880px;
+            max-height: 900px;
             background: var(--bg-body);
+            background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.08), transparent 40%);
             display: flex;
             flex-direction: column;
             padding: 16px;
@@ -65,14 +64,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding-bottom: 4px;
         }
 
         .app-title {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 800;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         .header-actions {
@@ -84,69 +85,72 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
             display: grid;
             place-items: center;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
         }
 
-        .icon-btn:active, .submit-btn:active, .export-btn:active, .action-btn:active {
-            transform: scale(0.92);
-        }
+        .icon-btn:active { transform: scale(0.92); }
 
-        .settings-bar {
+        .nav-tabs {
+            display: flex;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 14px;
-            padding: 10px;
-            display: flex;
-            gap: 8px;
+            padding: 4px;
+            gap: 4px;
             backdrop-filter: blur(12px);
         }
 
-        .select-group {
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .view-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 12px;
+            overflow: hidden;
+            display: none;
         }
 
-        .select-group label {
-            font-size: 0.68rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            font-weight: 700;
+        .view-container.active {
+            display: flex;
         }
 
-        select, input {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 10px;
-            border-radius: 8px;
-            outline: none;
-            font-size: 0.9rem;
-            width: 100%;
-            transition: border-color 0.2s ease;
-        }
-
-        select:focus, input:focus {
-            border-color: #6366f1;
-        }
-
+        /* Budget Card Style */
         .budget-box {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            box-shadow: 0 8px 20px var(--glow-color);
-            transition: box-shadow 0.4s ease, border-color 0.4s ease;
+            box-shadow: 0 10px 30px var(--glow-color);
+            backdrop-filter: blur(16px);
+            transition: all 0.4s ease;
         }
 
         .budget-header {
@@ -156,14 +160,14 @@
         }
 
         .mood-container {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .anim-emoji { font-size: 1.5rem; display: inline-block; }
+        .anim-emoji { font-size: 1.6rem; display: inline-block; }
         .happy-bounce { animation: bounce 1.2s infinite ease-in-out; }
         .sad-wiggle { animation: wiggle 2s infinite ease-in-out; }
         .full-sad-droop { animation: pulse 1.5s infinite ease-in-out; }
@@ -180,109 +184,86 @@
             100% { transform: translate(1px, 2px) rotate(2deg); }
         }
 
-        .fire-angry-wrapper {
-            position: relative;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: shakeAngry 0.25s infinite;
-        }
-
-        .flame-bg {
-            position: absolute;
-            top: -6px;
-            width: 36px;
-            height: 36px;
-            z-index: 1;
-            animation: flameGlow 0.6s infinite alternate ease-in-out;
-        }
-
-        .angry-face { position: relative; z-index: 2; font-size: 1.4rem; }
-
-        @keyframes flameGlow {
-            0% { transform: scale(0.9) translateY(0); opacity: 0.8; filter: drop-shadow(0 0 4px #ef4444); }
-            100% { transform: scale(1.15) translateY(-3px); opacity: 1; filter: drop-shadow(0 0 10px #f97316); }
-        }
-
         .budget-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-        .budget-input { width: 100px; text-align: center; padding: 4px 6px; font-weight: 700; }
+        .budget-input { width: 110px; text-align: center; padding: 6px; font-weight: 700; border-radius: 10px; }
 
         .progress-track {
-            width: 100%; height: 12px;
-            background: rgba(255, 255, 255, 0.08);
+            width: 100%; height: 10px;
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 10px; overflow: hidden;
         }
 
         .progress-fill {
             height: 100%; width: 0%;
-            background: var(--progress-color);
+            background: var(--success);
             transition: width 0.4s ease, background-color 0.3s ease;
             border-radius: 10px;
         }
 
-        .input-card {
+        /* Settings Bar */
+        .settings-bar {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            backdrop-filter: blur(12px);
+        }
+
+        .select-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .select-group label {
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        select, input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.88rem;
+            width: 100%;
+        }
+
+        /* List & Add Container */
+        .input-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            position: relative;
-        }
-
-        .input-with-actions { display: flex; gap: 6px; }
-
-        .action-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            width: 42px;
-            height: 42px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            font-size: 1.1rem;
-        }
-
-        .mic-listening {
-            background: #ef4444 !important;
-            animation: pulse 0.8s infinite alternate;
-        }
-
-        .suggestions-box {
-            position: absolute; top: 52px; left: 12px; right: 12px;
-            background: #1e1b4b; border: 1px solid #6366f1;
-            border-radius: 8px; max-height: 160px; overflow-y: auto;
-            z-index: 1000; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-        }
-
-        .suggestion-item {
-            padding: 10px; display: flex; justify-content: space-between;
-            font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+            gap: 8px;
+            backdrop-filter: blur(12px);
         }
 
         .row-two { display: flex; gap: 8px; }
 
         .submit-btn {
             background: var(--accent-gradient); color: white; border: none;
-            padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+            padding: 11px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s ease;
         }
+        .submit-btn:active { transform: scale(0.96); }
 
-        .list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
 
         .list-item {
             background: var(--card-bg); border: 1px solid var(--card-border);
-            padding: 10px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px;
-        }
-
-        .product-thumb {
-            width: 36px; height: 36px; object-fit: contain;
-            border-radius: 6px; background: rgba(255, 255, 255, 0.9); padding: 2px;
+            padding: 12px; border-radius: 14px; display: flex; align-items: center; gap: 10px;
+            backdrop-filter: blur(12px);
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
@@ -291,32 +272,120 @@
 
         .qty-picker {
             display: flex; align-items: center; gap: 6px;
-            background: rgba(0, 0, 0, 0.25); padding: 4px 8px; border-radius: 8px;
+            background: rgba(0, 0, 0, 0.25); padding: 4px 8px; border-radius: 10px;
         }
 
-        .qty-btn { background: transparent; border: none; color: var(--text-main); width: 20px; height: 20px; cursor: pointer; font-weight: bold; }
+        .qty-btn { background: transparent; border: none; color: var(--text-main); width: 22px; height: 22px; cursor: pointer; font-weight: bold; }
 
         .export-btn {
             background: linear-gradient(135deg, #10b981, #059669); color: white;
-            border: none; padding: 12px; border-radius: 12px; font-weight: 700;
+            border: none; padding: 12px; border-radius: 14px; font-weight: 700;
             display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
+        /* AI Chatbot View Style */
+        .chat-box {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .chat-bubble.user {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-bubble.ai {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 12px;
+            border-radius: 12px;
+            color: var(--text-main);
+        }
+
+        .send-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .add-from-ai-btn {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-top: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Modal Overlays */
         .modal-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
             display: flex; justify-content: center; align-items: center; padding: 20px;
             z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
         }
-
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-
         .modal-card {
             background: var(--bg-body); border: 1px solid var(--card-border);
-            border-radius: 16px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px;
+            border-radius: 18px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px;
         }
-
-        .modal-btn { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .modal-btn { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -326,117 +395,93 @@
         <div class="app-header">
             <div class="app-title">🛒 Smart Cart Pro</div>
             <div class="header-actions">
-                <button class="icon-btn" onclick="playClick(); toggleHistoryModal();" title="History">📜</button>
                 <button class="icon-btn" onclick="playClick(); toggleTheme();" title="Toggle Theme">🌓</button>
             </div>
         </div>
 
-        <!-- Settings -->
-        <div class="settings-bar">
-            <div class="select-group">
-                <label>Country</label>
-                <select id="countrySelect" onchange="playClick(); handleCountryChange();">
-                    <option value="PK">🇵🇰 Pakistan</option>
-                    <option value="IN">🇮🇳 India</option>
-                    <option value="US">🇺🇸 USA</option>
-                </select>
-            </div>
-            <div class="select-group">
-                <label>Currency</label>
-                <select id="currencySelect" onchange="playClick(); render();">
-                    <option value="PKR">PKR (Rs)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="USD">USD ($)</option>
-                </select>
-            </div>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" id="tabCartBtn" onclick="playClick(); switchTab('cart');">📋 My Cart</button>
+            <button class="tab-btn" id="tabAiBtn" onclick="playClick(); switchTab('ai');">✨ AI Assistant</button>
         </div>
-
-        <!-- Budget Bar & Animated Emoji -->
-        <div class="budget-box" id="budgetBox">
-            <div class="budget-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.85rem; font-weight: 600;">Budget Limit</span>
-                    <div id="moodContainer" class="mood-container"></div>
+                <!-- TAB 1: Shopping Cart View -->
+        <div class="view-container active" id="cartView">
+            <!-- Settings -->
+            <div class="settings-bar">
+                <div class="select-group">
+                    <label>Country</label>
+                    <select id="countrySelect" onchange="playClick(); handleCountryChange();">
+                        <option value="PK">🇵🇰 Pakistan</option>
+                        <option value="IN">🇮🇳 India</option>
+                        <option value="US">🇺🇸 USA</option>
+                    </select>
                 </div>
-                <div>
-                    <span class="curr-symbol">PKR</span>
-                    <input type="number" class="budget-input" id="budgetLimit" value="2000" onchange="render()">
+                <div class="select-group">
+                    <label>Currency</label>
+                    <select id="currencySelect" onchange="playClick(); render();">
+                        <option value="PKR">PKR (Rs)</option>
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                    </select>
                 </div>
             </div>
-            <div class="progress-track">
-                <div class="progress-fill" id="progressBar"></div>
-            </div>
-            <div class="budget-row" style="font-size:0.75rem; color:var(--text-sub);">
-                <span id="progressPercent" style="font-weight: 600;">0% Used</span>
-                <span>Spent: <b id="totalSpent" style="color:var(--text-main)">0</b></span>
-            </div>
-        </div>
 
-        <!-- Input Section -->
-        <div class="input-card">
-            <div class="input-with-actions">
-                <input type="text" id="itemName" placeholder="Item Name (e.g. Olpers, Aquafina...)" oninput="filterSuggestions(this.value)">
-                <input type="hidden" id="itemImg">
-                <button class="action-btn mic-btn" id="micBtn" onclick="playClick(); startVoiceInput();" title="Voice Search">🎤</button>
-                <button class="action-btn scan-btn" onclick="playClick(); startBarcodeScanner();" title="Scan Barcode">📷</button>
+            <!-- Budget Bar & Mood Emoji -->
+            <div class="budget-box" id="budgetBox">
+                <div class="budget-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.85rem; font-weight: 600;">Budget Limit</span>
+                        <div id="moodContainer" class="mood-container"></div>
+                    </div>
+                    <div>
+                        <span class="curr-symbol">PKR</span>
+                        <input type="number" class="budget-input" id="budgetLimit" value="3000" onchange="render()">
+                    </div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="budget-row" style="font-size:0.75rem; color:var(--text-sub);">
+                    <span id="progressPercent" style="font-weight: 600;">0% Used</span>
+                    <span>Spent: <b id="totalSpent" style="color:var(--text-main)">0</b></span>
+                </div>
             </div>
-            <div class="suggestions-box" id="suggestionsBox"></div>
 
-            <div class="row-two">
-                <input type="number" id="itemQty" value="1" min="1" placeholder="Qty" style="flex: 1;">
-                <input type="number" id="itemPrice" placeholder="Price" style="flex: 2;">
+            <!-- Manual Input Section -->
+            <div class="input-card">
+                <input type="text" id="itemName" placeholder="Item Name (e.g. J. Perfume, Samsung Buds...)">
+                <div class="row-two">
+                    <input type="number" id="itemQty" value="1" min="1" placeholder="Qty" style="flex: 1;">
+                    <input type="number" id="itemPrice" placeholder="Price" style="flex: 2;">
+                </div>
+                <button class="submit-btn" onclick="playClick(); addItem();">+ Add Item Manually</button>
             </div>
-            
-            <button class="submit-btn" onclick="playClick(); addItem();">+ Add Item</button>
-        </div>
 
-        <!-- Shopping List -->
-        <div class="list-container" id="listBody"></div>
+            <!-- Shopping List -->
+            <div class="list-container" id="listBody"></div>
 
-        <!-- Actions Footer -->
-        <div style="display:flex; gap:8px;">
-            <button class="export-btn" style="flex:2;" onclick="playClick(); shareToWhatsApp();">
-                💬 Share WhatsApp
-            </button>
-            <button class="export-btn" style="flex:1; background:linear-gradient(135deg, #3b82f6, #1d4ed8);" onclick="playClick(); saveCurrentListToHistory();">
-                💾 Save
+            <!-- WhatsApp Share Footer -->
+            <button class="export-btn" onclick="playClick(); shareToWhatsApp();">
+                💬 Share List via WhatsApp
             </button>
         </div>
 
-        <!-- Camera Scanner Overlay -->
-        <div class="modal-overlay" id="scannerModal">
-            <div class="modal-card" style="width: 100%; max-width: 360px;">
-                <div class="modal-title" style="font-weight:bold;">📷 Scan Barcode</div>
-                <div id="reader" style="width: 100%; min-height: 220px; border-radius: 8px; overflow: hidden; background: #000;"></div>
-                <button class="modal-btn" style="background:var(--text-sub);" onclick="playClick(); stopBarcodeScanner();">Cancel</button>
-            </div>
-        </div>
-
-        <!-- Save Custom Barcode Modal -->
-        <div class="modal-overlay" id="customBarcodeModal">
-            <div class="modal-card" style="width: 100%; max-width: 360px;">
-                <div class="modal-title" style="font-weight:bold; color:#6366f1;">📦 New Barcode Found!</div>
-                <p style="font-size:0.8rem; color:var(--text-sub);">Is barcode ko local database me save karein?</p>
-                <input type="text" id="newBarcodeVal" readonly style="opacity:0.6; text-align:center; font-weight:bold;">
-                <input type="text" id="newProductName" placeholder="Product Name (e.g. Tapal Tea)">
-                <input type="number" id="newProductPrice" placeholder="Price (PKR)">
-                <div style="display:flex; gap:8px;">
-                    <button class="modal-btn" style="flex:1; background:var(--success);" onclick="saveCustomBarcodeToDB();">Save to DB</button>
-                    <button class="modal-btn" style="flex:1; background:var(--text-sub);" onclick="closeCustomModal();">Skip</button>
+        <!-- TAB 2: AI Assistant Chatbot View -->
+        <div class="view-container" id="aiView">
+            <div class="chat-box">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-bubble ai">
+                        👋 Assalam-o-Alaikum! Main aapka AI Shopping Assistant hoon. Mujhse kisi bhi cheez ka latest market rate pooch sakte hain (jaise: <i>"J. Perfume ka kya rate hai?"</i> ya <i>"1kg ghee aur dahi ka price batao"</i>).
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Ask AI for prices or items..." onkeydown="if(event.key==='Enter') sendQueryToGemini()">
+                    <button class="send-btn" onclick="playClick(); sendQueryToGemini();">➤</button>
                 </div>
             </div>
         </div>
 
-        <!-- History Modal Overlay -->
-        <div class="modal-overlay" id="historyModal">
-            <div class="modal-card" style="width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto;">
-                <div class="modal-title" style="font-weight:bold;">📜 Past Shopping Lists</div>
-                <div id="historyListContainer" style="display:flex; flex-direction:column; gap:8px; text-align:left;"></div>
-                <button class="modal-btn" style="background:var(--accent-gradient);" onclick="playClick(); toggleHistoryModal();">Close</button>
-            </div>
-        </div>
-
-        <!-- Alert Warning Modal -->
+        <!-- Warning Modal -->
         <div class="modal-overlay" id="warningModal">
             <div class="modal-card">
                 <div class="modal-title" style="color:var(--danger); font-weight:bold;">🚨 Budget Exceeded!</div>
@@ -445,9 +490,9 @@
             </div>
         </div>
                     </div>
-        <script>
+                        <script>
+        // Audio Synthesizer Engine
         let audioCtx = null;
-
         function getAudioContext() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -462,7 +507,7 @@
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(800, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(); osc.stop(ctx.currentTime + 0.04);
@@ -477,34 +522,14 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(300, ctx.currentTime);
                 osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(); osc.stop(ctx.currentTime + 0.25);
             } catch(e) {}
         }
 
-        let shoppingList = JSON.parse(localStorage.getItem("smartCart_list")) || [];
-        let historyStore = JSON.parse(localStorage.getItem("smartCart_history")) || [];
-
-        // Predefined local database
-        const defaultDatabase = [
-            { name: "Aquafina Water (500ml)", barcode: "012000016331", img: "https://images.openfoodfacts.org/images/products/001/200/001/6331/front_en.3.200.jpg", rates: { PK: 60, IN: 20, US: 0.5 } },
-            { name: "Olper's Milk (1 Litre)", barcode: "8964000120102", rates: { PK: 290, IN: 80, US: 1.1 } },
-            { name: "MilkPak (1 Litre)", barcode: "8964000100012", rates: { PK: 295, IN: 82, US: 1.15 } },
-            { name: "Tapal Danedar (950g)", barcode: "8964000210012", rates: { PK: 1450, IN: 400, US: 5.2 } },
-            { name: "Lays Masala (Large)", barcode: "8964001100551", rates: { PK: 100, IN: 30, US: 0.4 } },
-            { name: "Bisconni Chocolatto", barcode: "8964002201122", rates: { PK: 50, IN: 15, US: 0.2 } },
-            { name: "Coca Cola (1.5 Litre)", barcode: "5449000000996", rates: { PK: 180, IN: 50, US: 0.8 } },
-            { name: "Pepsi (1.5 Litre)", barcode: "012000000133", rates: { PK: 175, IN: 48, US: 0.75 } }
-        ];
-
-        let localCustomDB = JSON.parse(localStorage.getItem("smartCart_customDB")) || [];
-        
-        function getCombinedDatabase() {
-            return [...defaultDatabase, ...localCustomDB];
-        }
-
+        let shoppingList = JSON.parse(localStorage.getItem("smartCart_aiList")) || [];
         const countryToCurrency = { PK: "PKR", IN: "INR", US: "USD" };
 
         function handleCountryChange() {
@@ -513,220 +538,108 @@
             render();
         }
 
-        function filterSuggestions(val) {
-            const box = document.getElementById("suggestionsBox");
+        function switchTab(tab) {
+            document.getElementById("cartView").classList.remove("active");
+            document.getElementById("aiView").classList.remove("active");
+            document.getElementById("tabCartBtn").classList.remove("active");
+            document.getElementById("tabAiBtn").classList.remove("active");
+
+            if (tab === 'cart') {
+                document.getElementById("cartView").classList.add("active");
+                document.getElementById("tabCartBtn").classList.add("active");
+            } else {
+                document.getElementById("aiView").classList.add("active");
+                document.getElementById("tabAiBtn").classList.add("active");
+            }
+        }
+
+        // Gemini API Configuration
+        const GEMINI_API_KEY = "AQ.Ab8RN6Llq0Nql6PgNIjwvWJ0-Bud89XtfaRcwER5OBaPCzciRg";
+
+        async function sendQueryToGemini() {
+            const inputEl = document.getElementById("chatInput");
+            const query = inputEl.value.trim();
+            if (!query) return;
+
+            const chatMessages = document.getElementById("chatMessages");
+            
+            // Append User Message
+            chatMessages.innerHTML += `<div class="chat-bubble user">${query}</div>`;
+            inputEl.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
             const country = document.getElementById("countrySelect").value;
             const currency = document.getElementById("currencySelect").value;
-            if (!val.trim()) { box.style.display = "none"; return; }
 
-            const db = getCombinedDatabase();
-            const matches = db.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
-            if (matches.length === 0) { box.style.display = "none"; return; }
+            // Loading bubble
+            const loadingId = "load_" + Date.now();
+            chatMessages.innerHTML += `<div class="chat-bubble ai" id="${loadingId}">AI is thinking & fetching latest rates...</div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            box.innerHTML = "";
-            matches.forEach(item => {
-                const price = item.rates[country] || item.rates['PK'] || 0;
-                const div = document.createElement("div");
-                div.className = "suggestion-item";
-                div.innerHTML = `<span>${item.name}</span> <b>${currency} ${price}</b>`;
-                div.onclick = () => { playClick(); selectSuggestion(item.name, price, item.img || ""); };
-                box.appendChild(div);
-            });
-            box.style.display = "block";
-        }
+            try {
+                const prompt = `You are a helpful shopping assistant. The user is asking about item rates for country: ${country} in currency: ${currency}. 
+                User query: "${query}". 
+                Provide estimated current market prices clearly. If the user wants to add an item or asks about prices, format your response naturally, and at the end provide a JSON snippet in this exact format if applicable:
+                [ADD_ITEM: {"name": "Item Name", "price": EstimatedNumericPrice}]`;
 
-        function selectSuggestion(name, price, img = "") {
-            document.getElementById("itemName").value = name;
-            if (price) document.getElementById("itemPrice").value = price;
-            document.getElementById("itemImg").value = img;
-            document.getElementById("suggestionsBox").style.display = "none";
-        }
-
-        function startVoiceInput() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
-
-            const recognition = new SpeechRecognition();
-            const micBtn = document.getElementById("micBtn");
-            recognition.lang = 'en-US';
-            recognition.start();
-
-            micBtn.classList.add("mic-listening");
-
-            recognition.onresult = (event) => {
-                micBtn.classList.remove("mic-listening");
-                const transcript = event.results[0][0].transcript;
-                
-                const words = transcript.split(" ");
-                let price = "";
-                let nameWords = [];
-
-                words.forEach(w => {
-                    if (!isNaN(w)) price = w;
-                    else nameWords.push(w);
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
                 });
 
-                document.getElementById("itemName").value = nameWords.join(" ");
-                if (price) document.getElementById("itemPrice").value = price;
-            };
+                const data = await response.json();
+                document.getElementById(loadingId).remove();
 
-            recognition.onerror = () => micBtn.classList.remove("mic-listening");
-            recognition.onend = () => micBtn.classList.remove("mic-listening");
-        }
-
-        let html5QrCode = null;
-
-        function startBarcodeScanner() {
-            document.getElementById("scannerModal").classList.add("active");
-            const readerDiv = document.getElementById("reader");
-            readerDiv.innerHTML = "";
-
-            html5QrCode = new Html5Qrcode("reader");
-
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 15, qrbox: { width: 250, height: 150 } },
-                (decodedText) => {
-                    playClick();
-                    stopBarcodeScanner();
-
-                    const cleanBarcode = decodedText.trim();
-                    const db = getCombinedDatabase();
-                    const matchedItem = db.find(i => i.barcode === cleanBarcode);
-                    const country = document.getElementById("countrySelect").value;
-
-                    // 1. Direct Local Match
-                    if (matchedItem) {
-                        const price = matchedItem.rates[country] || matchedItem.rates['PK'] || 0;
-                        selectSuggestion(matchedItem.name, price, matchedItem.img || "");
-                        return;
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let reply = data.candidates[0].content.parts[0].text;
+                    
+                    // Check if JSON item is embedded
+                    let parsedItem = null;
+                    const jsonMatch = reply.match(/\[ADD_ITEM:\s*({.*?})\]/);
+                    if (jsonMatch) {
+                        try {
+                            parsedItem = JSON.parse(jsonMatch[1]);
+                            reply = reply.replace(jsonMatch[0], ""); // clean text
+                        } catch(e) {}
                     }
 
-                    // 2. Open Food Facts API Call (Bina Key Direct Fetch)
-                    fetch(`https://world.openfoodfacts.org/api/v0/product/${cleanBarcode}.json`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === 1 && data.product) {
-                                const prod = data.product;
-                                const fetchedName = prod.product_name || prod.generic_name || "Scanned Item";
-                                const fetchedImg = prod.image_front_small_url || prod.image_url || "";
-                                const defaultPrice = 60; // Estimated fallback rate
+                    let bubbleHtml = `<div class="chat-bubble ai">${reply.replace(/\n/g, '<br>')}`;
+                    if (parsedItem) {
+                        bubbleHtml += `<br><button class="add-from-ai-btn" onclick='addParsedItemFromAI(${JSON.stringify(parsedItem.name)}, ${parsedItem.price})'>➕ Add "${parsedItem.name}" (${currency} ${parsedItem.price}) to Cart</button>`;
+                    }
+                    bubbleHtml += `</div>`;
 
-                                selectSuggestion(fetchedName, defaultPrice, fetchedImg);
-                            } else {
-                                openCustomModal(cleanBarcode);
-                            }
-                        })
-                        .catch(() => openCustomModal(cleanBarcode));
-                },
-                (errorMessage) => {}
-            ).catch(err => {
-                stopBarcodeScanner();
-            });
-        }
-
-        function openCustomModal(barcode) {
-            document.getElementById("newBarcodeVal").value = barcode;
-            document.getElementById("newProductName").value = "";
-            document.getElementById("newProductPrice").value = "";
-            document.getElementById("customBarcodeModal").classList.add("active");
-        }
-
-        function stopBarcodeScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                    document.getElementById("scannerModal").classList.remove("active");
-                    html5QrCode = null;
-                }).catch(() => {
-                    document.getElementById("scannerModal").classList.remove("active");
-                    html5QrCode = null;
-                });
-            } else {
-                document.getElementById("scannerModal").classList.remove("active");
-            }
-        }
-                    function saveCustomBarcodeToDB() {
-            const barcode = document.getElementById("newBarcodeVal").value;
-            const name = document.getElementById("newProductName").value.trim();
-            const price = parseFloat(document.getElementById("newProductPrice").value) || 0;
-
-            if (!name) return alert("Product name enter karein!");
-
-            const newEntry = {
-                name: name,
-                barcode: barcode,
-                img: "",
-                rates: { PK: price, IN: Math.round(price/3.5), US: (price/278).toFixed(2) }
-            };
-
-            localCustomDB.push(newEntry);
-            localStorage.setItem("smartCart_customDB", JSON.stringify(localCustomDB));
-
-            selectSuggestion(name, price, "");
-            closeCustomModal();
-        }
-
-        function closeCustomModal() {
-            document.getElementById("customBarcodeModal").classList.remove("active");
-        }
-
-        function saveCurrentListToHistory() {
-            if (shoppingList.length === 0) return alert("Shopping list is empty!");
-            const curr = document.getElementById("currencySelect").value;
-            const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            
-            const historyRecord = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                total: `${curr} ${total}`,
-                items: [...shoppingList]
-            };
-
-            historyStore.unshift(historyRecord);
-            localStorage.setItem("smartCart_history", JSON.stringify(historyStore));
-            alert("Receipt saved to History!");
-        }
-
-        function toggleHistoryModal() {
-            const modal = document.getElementById("historyModal");
-            const container = document.getElementById("historyListContainer");
-            modal.classList.toggle("active");
-
-            if (modal.classList.contains("active")) {
-                container.innerHTML = "";
-                if (historyStore.length === 0) {
-                    container.innerHTML = "<p style='color:var(--text-sub); text-align:center;'>No past records found.</p>";
-                    return;
+                    chatMessages.innerHTML += bubbleHtml;
+                } else {
+                    chatMessages.innerHTML += `<div class="chat-bubble ai">Sorry, I couldn't fetch the rate right now. Please try again.</div>`;
                 }
-
-                historyStore.forEach(record => {
-                    const card = document.createElement("div");
-                    card.style.cssText = "background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; border:1px solid var(--card-border);";
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.85rem;">
-                            <span>📅 ${record.date}</span>
-                            <span style="color:#10b981">${record.total}</span>
-                        </div>
-                        <div style="font-size:0.75rem; color:var(--text-sub); margin-top:4px;">
-                            ${record.items.map(i => i.name).join(", ")}
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                chatMessages.innerHTML += `<div class="chat-bubble ai">Network error. Please check your connection.</div>`;
             }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addParsedItemFromAI(name, price) {
+            playClick();
+            document.getElementById("itemName").value = name;
+            document.getElementById("itemPrice").value = price;
+            document.getElementById("itemQty").value = 1;
+            switchTab('cart');
+            addItem();
         }
 
         function addItem() {
             const nameEl = document.getElementById("itemName");
             const qtyEl = document.getElementById("itemQty");
             const priceEl = document.getElementById("itemPrice");
-            const imgEl = document.getElementById("itemImg");
 
             const name = nameEl.value.trim();
             const qty = parseInt(qtyEl.value) || 1;
             const price = parseFloat(priceEl.value) || 0;
-            const img = imgEl.value || "";
 
             if (!name) return alert("Please enter item name!");
 
@@ -741,9 +654,8 @@
                 return;
             }
 
-            shoppingList.push({ id: Date.now(), name, qty, price, img, completed: false });
-            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1; imgEl.value = "";
-            document.getElementById("suggestionsBox").style.display = "none";
+            shoppingList.push({ id: Date.now(), name, qty, price, completed: false });
+            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1;
             saveAndRender();
         }
 
@@ -780,7 +692,7 @@
         function shareToWhatsApp() {
             if (shoppingList.length === 0) return alert("Shopping list is empty!");
             const curr = document.getElementById("currencySelect").value;
-            let text = `🛒 *Shopping List*\n----------------------------\n`;
+            let text = `🛒 *Smart Shopping List*\n----------------------------\n`;
             let total = 0;
             shoppingList.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
@@ -801,7 +713,7 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem("smartCart_list", JSON.stringify(shoppingList));
+            localStorage.setItem("smartCart_aiList", JSON.stringify(shoppingList));
             render();
         }
 
@@ -811,12 +723,15 @@
             document.querySelectorAll(".curr-symbol").forEach(el => el.innerText = selectedCurrency);
 
             listBody.innerHTML = "";
+            if (shoppingList.length === 0) {
+                listBody.innerHTML = `<div style="text-align:center; color: var(--text-sub); padding: 2rem; font-size:0.85rem;">No items in cart yet.<br>Ask AI assistant or add manually!</div>`;
+            }
+
             shoppingList.forEach((item) => {
                 const itemEl = document.createElement("div");
                 itemEl.className = "list-item";
                 itemEl.innerHTML = `
                     <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleComplete(${item.id})">
-                    ${item.img ? `<img src="${item.img}" class="product-thumb" alt="prod">` : `<div style="width:36px;height:36px;display:grid;place-items:center;background:rgba(255,255,255,0.05);border-radius:6px;font-size:0.8rem;">📦</div>`}
                     <div class="item-info">
                         <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
                         <span style="font-size:0.75rem; color:var(--text-sub);">${selectedCurrency} ${item.price * item.qty}</span>
@@ -826,7 +741,7 @@
                         <span style="font-size:0.85rem">${item.qty}</span>
                         <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
                     </div>
-                    <button class="qty-btn" style="color:var(--danger); margin-left: 4px;" onclick="deleteItem(${item.id})">✕</button>
+                    <button class="qty-btn" style="color:var(--danger);" onclick="deleteItem(${item.id})">✕</button>
                 `;
                 listBody.appendChild(itemEl);
             });
@@ -845,42 +760,20 @@
 
             if (percent < 30) {
                 bar.style.backgroundColor = "#10b981";
-                bar.style.boxShadow = "0 0 10px rgba(16, 185, 129, 0.5)";
-                budgetBox.style.borderColor = "rgba(16, 185, 129, 0.3)";
-                budgetBox.style.boxShadow = "0 8px 20px rgba(16, 185, 129, 0.15)";
+                budgetBox.style.boxShadow = "0 10px 30px rgba(16, 185, 129, 0.15)";
                 moodBox.innerHTML = `<span class="anim-emoji happy-bounce">😊</span>`;
             } else if (percent < 60) {
                 bar.style.backgroundColor = "#facc15";
-                bar.style.boxShadow = "0 0 10px rgba(250, 204, 21, 0.5)";
-                budgetBox.style.borderColor = "rgba(250, 204, 21, 0.3)";
-                budgetBox.style.boxShadow = "0 8px 20px rgba(250, 204, 21, 0.15)";
+                budgetBox.style.boxShadow = "0 10px 30px rgba(250, 204, 21, 0.15)";
                 moodBox.innerHTML = `<span class="anim-emoji sad-wiggle">😟</span>`;
             } else if (percent < 80) {
                 bar.style.backgroundColor = "#f97316";
-                bar.style.boxShadow = "0 0 10px rgba(249, 115, 22, 0.5)";
-                budgetBox.style.borderColor = "rgba(249, 115, 22, 0.4)";
-                budgetBox.style.boxShadow = "0 8px 24px rgba(249, 115, 22, 0.2)";
+                budgetBox.style.boxShadow = "0 10px 30px rgba(249, 115, 22, 0.2)";
                 moodBox.innerHTML = `<span class="anim-emoji full-sad-droop">😢</span>`;
             } else {
                 bar.style.backgroundColor = "#ef4444";
-                bar.style.boxShadow = "0 0 14px rgba(239, 68, 68, 0.8)";
-                budgetBox.style.borderColor = "rgba(239, 68, 68, 0.6)";
-                budgetBox.style.boxShadow = "0 8px 24px rgba(239, 68, 68, 0.35)";
-                moodBox.innerHTML = `
-                    <div class="fire-angry-wrapper">
-                        <svg class="flame-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 23C16.4183 23 20 19.4183 20 15C20 11.5 17.5 8.5 15 6C15 8.5 13.5 10 12 10C10.5 10 9.5 8.5 10 6C7.5 8.5 4 11.5 4 15C4 19.4183 7.58172 23 12 23Z" fill="url(#flameGrad)"/>
-                            <defs>
-                                <linearGradient id="flameGrad" x1="12" y1="6" x2="12" y2="23" gradientUnits="userSpaceOnUse">
-                                    <stop stop-color="#FFD700"/>
-                                    <stop offset="0.5" stop-color="#FF4500"/>
-                                    <stop offset="1" stop-color="#B22222"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <span class="angry-face">😡</span>
-                    </div>
-                `;
+                budgetBox.style.boxShadow = "0 10px 30px rgba(239, 68, 68, 0.35)";
+                moodBox.innerHTML = `<span class="anim-emoji angry-shake">😡</span>`;
             }
         }
 
