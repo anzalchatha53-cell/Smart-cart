@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg-body: #05070b;
-            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-bg: rgba(255, 255, 255, 0.04);
             --card-border: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
@@ -64,7 +64,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }
 
         .app-title {
@@ -94,7 +94,6 @@
             backdrop-filter: blur(10px);
             transition: all 0.2s ease;
         }
-
         .icon-btn:active { transform: scale(0.92); }
 
         .nav-tabs {
@@ -139,7 +138,6 @@
             display: flex;
         }
 
-        /* Budget Card Style */
         .budget-box {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -200,7 +198,6 @@
             border-radius: 10px;
         }
 
-        /* Settings Bar */
         .settings-bar {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -226,7 +223,7 @@
         }
 
         select, input {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--card-border);
             color: var(--text-main);
             padding: 8px 10px;
@@ -236,7 +233,6 @@
             width: 100%;
         }
 
-        /* List & Add Container */
         .input-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -284,7 +280,6 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
-        /* AI Chatbot View Style */
         .chat-box {
             flex: 1;
             background: var(--card-bg);
@@ -306,7 +301,7 @@
         }
 
         .chat-bubble {
-            max-width: 85%;
+            max-width: 88%;
             padding: 10px 14px;
             border-radius: 14px;
             font-size: 0.88rem;
@@ -329,9 +324,32 @@
             border-bottom-left-radius: 2px;
         }
 
+        .suggestion-chips-wrapper {
+            display: flex;
+            gap: 6px;
+            padding: 8px 10px;
+            overflow-x: auto;
+            background: rgba(0,0,0,0.15);
+            border-top: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        .chip-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover { background: var(--accent-gradient); color: white; }
+
         .chat-input-area {
             padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             border-top: 1px solid var(--card-border);
             display: flex;
             gap: 8px;
@@ -366,14 +384,13 @@
             border-radius: 8px;
             font-size: 0.78rem;
             font-weight: 700;
-            margin-top: 6px;
+            margin-top: 8px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
 
-        /* Modal Overlays */
         .modal-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
@@ -404,9 +421,10 @@
             <button class="tab-btn active" id="tabCartBtn" onclick="playClick(); switchTab('cart');">📋 My Cart</button>
             <button class="tab-btn" id="tabAiBtn" onclick="playClick(); switchTab('ai');">✨ AI Assistant</button>
         </div>
-                <!-- TAB 1: Shopping Cart View -->
+
+        <!-- TAB 1: Shopping Cart View -->
         <div class="view-container active" id="cartView">
-            <!-- Settings -->
+            <!-- Country & Currency Settings -->
             <div class="settings-bar">
                 <div class="select-group">
                     <label>Country</label>
@@ -449,7 +467,7 @@
 
             <!-- Manual Input Section -->
             <div class="input-card">
-                <input type="text" id="itemName" placeholder="Item Name (e.g. J. Perfume, Samsung Buds...)">
+                <input type="text" id="itemName" placeholder="Item Name (e.g. Perfume, Eggs, Milk...)">
                 <div class="row-two">
                     <input type="number" id="itemQty" value="1" min="1" placeholder="Qty" style="flex: 1;">
                     <input type="number" id="itemPrice" placeholder="Price" style="flex: 2;">
@@ -471,9 +489,13 @@
             <div class="chat-box">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble ai">
-                        👋 Assalam-o-Alaikum! Main aapka AI Shopping Assistant hoon. Mujhse kisi bhi cheez ka latest market rate pooch sakte hain (jaise: <i>"J. Perfume ka kya rate hai?"</i> ya <i>"1kg ghee aur dahi ka price batao"</i>).
+                        👋 Assalam-o-Alaikum! Main aapka AI Assistant hoon. Kisi bhi cheez ka rate poochiye (jaise: <i>"Perfume ka rate"</i> ya <i>"1 dozen eggs"</i>) ya neeche suggestion tap karein.
                     </div>
                 </div>
+                
+                <!-- Dynamic Auto-Learning Suggestions Chips Bar -->
+                <div class="suggestion-chips-wrapper" id="suggestionChipsContainer"></div>
+
                 <div class="chat-input-area">
                     <input type="text" id="chatInput" placeholder="Ask AI for prices or items..." onkeydown="if(event.key==='Enter') sendQueryToGemini()">
                     <button class="send-btn" onclick="playClick(); sendQueryToGemini();">➤</button>
@@ -489,100 +511,243 @@
                 <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
-                    </div>
-                        <script>
-        // Audio Synthesizer Engine
-        let audioCtx = null;
-        function getAudioContext() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
-        }
+    </div>
+        <script>
+        // API Key Integration
+        const GEMINI_API_KEY = "AQ.Ab8RN6KlfqjGiZENFwFcTYNx-vobh9ONSe39FXQxObftwU4U1A";
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+        let state = {
+            country: 'PK',
+            currency: 'PKR',
+            budget: 3000,
+            items: [],
+            theme: 'dark',
+            learnedItems: ['Perfume', 'Milk 1L', 'Eggs 1 Dozen', 'Bread', 'Chicken 1kg', 'Rice 1kg', 'Cooking Oil 1L']
+        };
+
+        const currSymbols = { PKR: 'Rs', INR: '₹', USD: '$' };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClick() {
-            try {
-                const ctx = getAudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04);
-                gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.04);
-            } catch(e) {}
-        }
-
-        function playAlertSound() {
-            try {
-                const ctx = getAudioContext();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(300, ctx.currentTime);
-                osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.25);
-            } catch(e) {}
-        }
-
-        let shoppingList = JSON.parse(localStorage.getItem("smartCart_aiList")) || [];
-        const countryToCurrency = { PK: "PKR", IN: "INR", US: "USD" };
-
-        function handleCountryChange() {
-            const country = document.getElementById("countrySelect").value;
-            document.getElementById("currencySelect").value = countryToCurrency[country];
-            render();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
         }
 
         function switchTab(tab) {
-            document.getElementById("cartView").classList.remove("active");
-            document.getElementById("aiView").classList.remove("active");
-            document.getElementById("tabCartBtn").classList.remove("active");
-            document.getElementById("tabAiBtn").classList.remove("active");
-
-            if (tab === 'cart') {
-                document.getElementById("cartView").classList.add("active");
-                document.getElementById("tabCartBtn").classList.add("active");
-            } else {
-                document.getElementById("aiView").classList.add("active");
-                document.getElementById("tabAiBtn").classList.add("active");
-            }
+            document.getElementById('cartView').classList.toggle('active', tab === 'cart');
+            document.getElementById('aiView').classList.toggle('active', tab === 'ai');
+            document.getElementById('tabCartBtn').classList.toggle('active', tab === 'cart');
+            document.getElementById('tabAiBtn').classList.toggle('active', tab === 'ai');
+            if (tab === 'ai') renderChips();
         }
 
-        // Gemini API Configuration
-        const GEMINI_API_KEY = "AQ.Ab8RN6Llq0Nql6PgNIjwvWJ0-Bud89XtfaRcwER5OBaPCzciRg";
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            state.theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+        }
+
+        function handleCountryChange() {
+            const country = document.getElementById('countrySelect').value;
+            state.country = country;
+            const currencySelect = document.getElementById('currencySelect');
+            if (country === 'PK') currencySelect.value = 'PKR';
+            else if (country === 'IN') currencySelect.value = 'INR';
+            else if (country === 'US') currencySelect.value = 'USD';
+            render();
+        }
+
+        function addItem(name = null, price = null, qty = 1) {
+            const nameInput = document.getElementById('itemName');
+            const priceInput = document.getElementById('itemPrice');
+            const qtyInput = document.getElementById('itemQty');
+
+            const finalName = name || nameInput.value.trim();
+            const finalPrice = price !== null ? parseFloat(price) : parseFloat(priceInput.value);
+            const finalQty = qty || parseInt(qtyInput.value) || 1;
+
+            if (!finalName || isNaN(finalPrice) || finalPrice <= 0) {
+                alert('Please enter valid item name and price!');
+                return;
+            }
+
+            if (!state.learnedItems.includes(finalName)) {
+                state.learnedItems.unshift(finalName);
+            }
+
+            state.items.push({
+                id: Date.now(),
+                name: finalName,
+                price: finalPrice,
+                qty: finalQty,
+                completed: false
+            });
+
+            if (!name) {
+                nameInput.value = '';
+                priceInput.value = '';
+                qtyInput.value = '1';
+            }
+
+            render();
+        }
+
+        function toggleComplete(id) {
+            const item = state.items.find(i => i.id === id);
+            if (item) item.completed = !item.completed;
+            render();
+        }
+
+        function updateQty(id, delta) {
+            const item = state.items.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) state.items = state.items.filter(i => i.id !== id);
+            }
+            render();
+        }
+
+        function deleteItem(id) {
+            state.items = state.items.filter(i => i.id !== id);
+            render();
+        }
+
+        function render() {
+            const curr = document.getElementById('currencySelect').value;
+            state.currency = curr;
+            document.querySelectorAll('.curr-symbol').forEach(el => el.textContent = currSymbols[curr] || curr);
+
+            const budget = parseFloat(document.getElementById('budgetLimit').value) || 0;
+            state.budget = budget;
+
+            const totalSpent = state.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('totalSpent').textContent = `${totalSpent.toFixed(0)} ${currSymbols[curr]}`;
+
+            const percent = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+            const bar = document.getElementById('progressBar');
+            bar.style.width = `${percent}%`;
+
+            const percentText = document.getElementById('progressPercent');
+            percentText.textContent = `${percent.toFixed(0)}% Used`;
+
+            const mood = document.getElementById('moodContainer');
+            if (totalSpent === 0) {
+                mood.innerHTML = '<span class="anim-emoji happy-bounce">😊</span>';
+                bar.style.backgroundColor = 'var(--success)';
+            } else if (totalSpent <= budget * 0.75) {
+                mood.innerHTML = '<span class="anim-emoji happy-bounce">🙂</span>';
+                bar.style.backgroundColor = 'var(--success)';
+            } else if (totalSpent <= budget) {
+                mood.innerHTML = '<span class="anim-emoji sad-wiggle">😟</span>';
+                bar.style.backgroundColor = '#f59e0b';
+            } else if (totalSpent <= budget * 1.25) {
+                mood.innerHTML = '<span class="anim-emoji full-sad-droop">😭</span>';
+                bar.style.backgroundColor = 'var(--danger)';
+            } else {
+                mood.innerHTML = '<span class="anim-emoji angry-shake">😡</span>';
+                bar.style.backgroundColor = '#b91c1c';
+                showModal(`Budget Limit (${budget} ${curr}) Overstepped by ${(totalSpent - budget).toFixed(0)} ${curr}!`);
+            }
+
+            const listBody = document.getElementById('listBody');
+            listBody.innerHTML = '';
+
+            state.items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'list-item';
+                card.innerHTML = `
+                    <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="playClick(); toggleComplete(${item.id})">
+                    <div class="item-info">
+                        <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
+                        <span style="font-size:0.75rem; color:var(--text-sub);">${item.price} ${currSymbols[curr]} x ${item.qty} = <b>${(item.price * item.qty).toFixed(0)} ${currSymbols[curr]}</b></span>
+                    </div>
+                    <div class="qty-picker">
+                        <button class="qty-btn" onclick="playClick(); updateQty(${item.id}, -1)">-</button>
+                        <span style="font-size:0.85rem; font-weight:bold;">${item.qty}</span>
+                        <button class="qty-btn" onclick="playClick(); updateQty(${item.id}, 1)">+</button>
+                    </div>
+                    <button style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.1rem;" onclick="playClick(); deleteItem(${item.id})">🗑️</button>
+                `;
+                listBody.appendChild(card);
+            });
+        }
+
+        function shareToWhatsApp() {
+            if (state.items.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            let msg = `🛒 *Smart Cart Shopping List*\n\n`;
+            let total = 0;
+            state.items.forEach((item, index) => {
+                const sub = item.price * item.qty;
+                total += sub;
+                msg += `${index + 1}. ${item.name} - ${item.qty}x @ ${item.price} = *${sub} ${state.currency}*\n`;
+            });
+            msg += `\n💰 *Total Estimated Spent:* ${total} ${state.currency}`;
+            msg += `\n📌 *Budget Limit:* ${state.budget} ${state.currency}`;
+            
+            const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        function renderChips() {
+            const container = document.getElementById('suggestionChipsContainer');
+            container.innerHTML = '';
+            state.learnedItems.slice(0, 8).forEach(item => {
+                const chip = document.createElement('button');
+                chip.className = 'chip-btn';
+                chip.textContent = `💡 Price of ${item}?`;
+                chip.onclick = () => {
+                    playClick();
+                    document.getElementById('chatInput').value = `${item} ka rate kya hai?`;
+                    sendQueryToGemini();
+                };
+                container.appendChild(chip);
+            });
+        }
 
         async function sendQueryToGemini() {
-            const inputEl = document.getElementById("chatInput");
-            const query = inputEl.value.trim();
-            if (!query) return;
+            const input = document.getElementById('chatInput');
+            const userMsg = input.value.trim();
+            if (!userMsg) return;
 
-            const chatMessages = document.getElementById("chatMessages");
+            const chatMessages = document.getElementById('chatMessages');
             
-            // Append User Message
-            chatMessages.innerHTML += `<div class="chat-bubble user">${query}</div>`;
-            inputEl.value = "";
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user';
+            userBubble.textContent = userMsg;
+            chatMessages.appendChild(userBubble);
+            input.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            const country = document.getElementById("countrySelect").value;
-            const currency = document.getElementById("currencySelect").value;
-
-            // Loading bubble
-            const loadingId = "load_" + Date.now();
-            chatMessages.innerHTML += `<div class="chat-bubble ai" id="${loadingId}">AI is thinking & fetching latest rates...</div>`;
+            const aiBubble = document.createElement('div');
+            aiBubble.className = 'chat-bubble ai';
+            aiBubble.textContent = '⚡ Checking estimated prices...';
+            chatMessages.appendChild(aiBubble);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const prompt = `You are a helpful shopping assistant. The user is asking about item rates for country: ${country} in currency: ${currency}. 
-                User query: "${query}". 
-                Provide estimated current market prices clearly. If the user wants to add an item or asks about prices, format your response naturally, and at the end provide a JSON snippet in this exact format if applicable:
-                [ADD_ITEM: {"name": "Item Name", "price": EstimatedNumericPrice}]`;
+                const prompt = `You are an AI Smart Shopping Assistant for ${state.country} region. 
+                User query: "${userMsg}".
+                Task:
+                1. Identify if the user is asking about an item's estimated market price or asking for a product quote.
+                2. Respond concisely in Roman Urdu or English.
+                3. ALWAYS format the estimated price cleanly.
+                4. At the very end of your response, strictly output JSON block if item/price detected:
+                @@JSON{"name": "Item Name", "price": 250, "qty": 1}@@`;
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(GEMINI_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -591,194 +756,45 @@
                 });
 
                 const data = await response.json();
-                document.getElementById(loadingId).remove();
+                let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mujhe samajh nahi aaya, phir se likhein.";
 
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
-                    let reply = data.candidates[0].content.parts[0].text;
-                    
-                    // Check if JSON item is embedded
-                    let parsedItem = null;
-                    const jsonMatch = reply.match(/\[ADD_ITEM:\s*({.*?})\]/);
-                    if (jsonMatch) {
-                        try {
-                            parsedItem = JSON.parse(jsonMatch[1]);
-                            reply = reply.replace(jsonMatch[0], ""); // clean text
-                        } catch(e) {}
-                    }
-
-                    let bubbleHtml = `<div class="chat-bubble ai">${reply.replace(/\n/g, '<br>')}`;
-                    if (parsedItem) {
-                        bubbleHtml += `<br><button class="add-from-ai-btn" onclick='addParsedItemFromAI(${JSON.stringify(parsedItem.name)}, ${parsedItem.price})'>➕ Add "${parsedItem.name}" (${currency} ${parsedItem.price}) to Cart</button>`;
-                    }
-                    bubbleHtml += `</div>`;
-
-                    chatMessages.innerHTML += bubbleHtml;
-                } else {
-                    chatMessages.innerHTML += `<div class="chat-bubble ai">Sorry, I couldn't fetch the rate right now. Please try again.</div>`;
+                let parsedItem = null;
+                const jsonMatch = reply.match(/@@JSON({.*?})@@/s);
+                if (jsonMatch) {
+                    try {
+                        parsedItem = JSON.parse(jsonMatch[1]);
+                        reply = reply.replace(/@@JSON{.*?}@@/s, '').trim();
+                    } catch (e) {}
                 }
-            } catch (error) {
-                document.getElementById(loadingId).remove();
-                chatMessages.innerHTML += `<div class="chat-bubble ai">Network error. Please check your connection.</div>`;
+
+                aiBubble.innerHTML = reply.replace(/\n/g, '<br>');
+
+                if (parsedItem) {
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'add-from-ai-btn';
+                    addBtn.innerHTML = `➕ Add ${parsedItem.name} (${parsedItem.price} ${state.currency}) to Cart`;
+                    addBtn.onclick = () => {
+                        playClick();
+                        addItem(parsedItem.name, parsedItem.price, parsedItem.qty || 1);
+                        switchTab('cart');
+                    };
+                    aiBubble.appendChild(document.createElement('br'));
+                    aiBubble.appendChild(addBtn);
+                }
+
+            } catch (err) {
+                aiBubble.textContent = '❌ API Error: Connection check karein ya Key re-verify karein.';
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        function addParsedItemFromAI(name, price) {
-            playClick();
-            document.getElementById("itemName").value = name;
-            document.getElementById("itemPrice").value = price;
-            document.getElementById("itemQty").value = 1;
-            switchTab('cart');
-            addItem();
-        }
-
-        function addItem() {
-            const nameEl = document.getElementById("itemName");
-            const qtyEl = document.getElementById("itemQty");
-            const priceEl = document.getElementById("itemPrice");
-
-            const name = nameEl.value.trim();
-            const qty = parseInt(qtyEl.value) || 1;
-            const price = parseFloat(priceEl.value) || 0;
-
-            if (!name) return alert("Please enter item name!");
-
-            const currentTotal = shoppingList.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-            const projectedCost = price * qty;
-            const curr = document.getElementById("currencySelect").value;
-
-            if (budgetLimit > 0 && (currentTotal + projectedCost) > budgetLimit) {
-                playAlertSound();
-                showWarning(`Adding "${name}" (${curr} ${projectedCost}) exceeds your budget limit.`);
-                return;
-            }
-
-            shoppingList.push({ id: Date.now(), name, qty, price, completed: false });
-            nameEl.value = ""; priceEl.value = ""; qtyEl.value = 1;
-            saveAndRender();
-        }
-
-        function toggleComplete(id) {
-            playClick();
-            const item = shoppingList.find(i => i.id === id);
-            if (item) { item.completed = !item.completed; saveAndRender(); }
-        }
-
-        function updateQty(id, delta) {
-            playClick();
-            const item = shoppingList.find(i => i.id === id);
-            if (!item) return;
-
-            if (delta > 0) {
-                const currentTotal = shoppingList.reduce((sum, i) => sum + (i.price * i.qty), 0);
-                const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-                if (budgetLimit > 0 && (currentTotal + item.price) > budgetLimit) {
-                    playAlertSound();
-                    showWarning("Budget limit reached!");
-                    return;
-                }
-            }
-            item.qty = Math.max(1, item.qty + delta);
-            saveAndRender();
-        }
-
-        function deleteItem(id) {
-            playClick();
-            shoppingList = shoppingList.filter(i => i.id !== id);
-            saveAndRender();
-        }
-
-        function shareToWhatsApp() {
-            if (shoppingList.length === 0) return alert("Shopping list is empty!");
-            const curr = document.getElementById("currencySelect").value;
-            let text = `🛒 *Smart Shopping List*\n----------------------------\n`;
-            let total = 0;
-            shoppingList.forEach((item, index) => {
-                const itemTotal = item.price * item.qty;
-                total += itemTotal;
-                text += `${index + 1}. *${item.name}* (x${item.qty}) - ${curr} ${itemTotal}\n`;
-            });
-            text += `----------------------------\n💰 *Total:* ${curr} ${total}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function showWarning(msg) {
-            document.getElementById("modalMsg").innerText = msg;
-            document.getElementById("warningModal").classList.add("active");
+        function showModal(msg) {
+            document.getElementById('modalMsg').textContent = msg;
+            document.getElementById('warningModal').classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById("warningModal").classList.remove("active");
-        }
-
-        function saveAndRender() {
-            localStorage.setItem("smartCart_aiList", JSON.stringify(shoppingList));
-            render();
-        }
-
-        function render() {
-            const listBody = document.getElementById("listBody");
-            const selectedCurrency = document.getElementById("currencySelect").value;
-            document.querySelectorAll(".curr-symbol").forEach(el => el.innerText = selectedCurrency);
-
-            listBody.innerHTML = "";
-            if (shoppingList.length === 0) {
-                listBody.innerHTML = `<div style="text-align:center; color: var(--text-sub); padding: 2rem; font-size:0.85rem;">No items in cart yet.<br>Ask AI assistant or add manually!</div>`;
-            }
-
-            shoppingList.forEach((item) => {
-                const itemEl = document.createElement("div");
-                itemEl.className = "list-item";
-                itemEl.innerHTML = `
-                    <input type="checkbox" ${item.completed ? 'checked' : ''} onclick="toggleComplete(${item.id})">
-                    <div class="item-info">
-                        <span class="item-name ${item.completed ? 'completed-text' : ''}">${item.name}</span>
-                        <span style="font-size:0.75rem; color:var(--text-sub);">${selectedCurrency} ${item.price * item.qty}</span>
-                    </div>
-                    <div class="qty-picker">
-                        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                        <span style="font-size:0.85rem">${item.qty}</span>
-                        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-                    </div>
-                    <button class="qty-btn" style="color:var(--danger);" onclick="deleteItem(${item.id})">✕</button>
-                `;
-                listBody.appendChild(itemEl);
-            });
-
-            const total = shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const budgetLimit = parseFloat(document.getElementById("budgetLimit").value) || 0;
-            document.getElementById("totalSpent").innerText = `${selectedCurrency} ${total}`;
-
-            const percent = budgetLimit > 0 ? Math.min(100, Math.round((total / budgetLimit) * 100)) : 0;
-            const bar = document.getElementById("progressBar");
-            const moodBox = document.getElementById("moodContainer");
-            const budgetBox = document.getElementById("budgetBox");
-
-            bar.style.width = `${percent}%`;
-            document.getElementById("progressPercent").innerText = `${percent}% Used`;
-
-            if (percent < 30) {
-                bar.style.backgroundColor = "#10b981";
-                budgetBox.style.boxShadow = "0 10px 30px rgba(16, 185, 129, 0.15)";
-                moodBox.innerHTML = `<span class="anim-emoji happy-bounce">😊</span>`;
-            } else if (percent < 60) {
-                bar.style.backgroundColor = "#facc15";
-                budgetBox.style.boxShadow = "0 10px 30px rgba(250, 204, 21, 0.15)";
-                moodBox.innerHTML = `<span class="anim-emoji sad-wiggle">😟</span>`;
-            } else if (percent < 80) {
-                bar.style.backgroundColor = "#f97316";
-                budgetBox.style.boxShadow = "0 10px 30px rgba(249, 115, 22, 0.2)";
-                moodBox.innerHTML = `<span class="anim-emoji full-sad-droop">😢</span>`;
-            } else {
-                bar.style.backgroundColor = "#ef4444";
-                budgetBox.style.boxShadow = "0 10px 30px rgba(239, 68, 68, 0.35)";
-                moodBox.innerHTML = `<span class="anim-emoji angry-shake">😡</span>`;
-            }
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle("light-mode");
+            document.getElementById('warningModal').classList.remove('active');
         }
 
         render();
