@@ -438,7 +438,7 @@
                 <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
-                    </div>
+    </div>
         <script>
         let audioCtx = null;
 
@@ -590,14 +590,12 @@
                     const matchedItem = db.find(i => i.barcode === cleanBarcode);
                     const country = document.getElementById("countrySelect").value;
 
-                    // 1. Direct Local Database Hit
                     if (matchedItem) {
                         const price = matchedItem.rates[country] || matchedItem.rates['PK'] || 0;
                         selectSuggestion(matchedItem.name, price);
                         return;
                     }
 
-                    // 2. Open Custom Add Modal if barcode not in DB
                     document.getElementById("newBarcodeVal").value = cleanBarcode;
                     document.getElementById("newProductName").value = "";
                     document.getElementById("newProductPrice").value = "";
@@ -623,8 +621,7 @@
                 document.getElementById("scannerModal").classList.remove("active");
             }
         }
-
-        function saveCustomBarcodeToDB() {
+                    function saveCustomBarcodeToDB() {
             const barcode = document.getElementById("newBarcodeVal").value;
             const name = document.getElementById("newProductName").value.trim();
             const price = parseFloat(document.getElementById("newProductPrice").value) || 0;
@@ -640,7 +637,6 @@
             localCustomDB.push(newEntry);
             localStorage.setItem("smartCart_customDB", JSON.stringify(localCustomDB));
 
-            // Select directly for current form
             selectSuggestion(name, price);
             closeCustomModal();
         }
@@ -853,4 +849,17 @@
                                 </linearGradient>
                             </defs>
                         </svg>
-                        <span class="angry-f
+                        <span class="angry-face">😡</span>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("light-mode");
+        }
+
+        render();
+    </script>
+</body>
+</html>
