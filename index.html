@@ -2,528 +2,499 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Cart Pro - AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Cart AI - Advanced Shopping Assistant</title>
     <style>
         :root {
-            --bg-body: #05070b;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --card-border: rgba(255, 255, 255, 0.08);
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
-            --glow-color: rgba(99, 102, 241, 0.15);
-            --danger: #ef4444;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
             --success: #10b981;
+            --danger: #ef4444;
+            --border: #475569;
         }
 
         .light-mode {
-            --bg-body: #f1f5f9;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --card-border: rgba(0, 0, 0, 0.08);
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-input: #f1f5f9;
             --text-main: #0f172a;
             --text-sub: #64748b;
+            --border: #cbd5e1;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background-color: var(--bg-body);
-            height: 100dvh;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--text-main);
-            overflow: hidden;
-            transition: background-color 0.3s ease;
+            padding: 15px;
+            transition: background 0.3s ease;
         }
 
-        .app-frame {
+        .app-container {
             width: 100%;
-            max-width: 420px;
-            height: 100dvh;
-            max-height: 900px;
-            background: var(--bg-body);
-            background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.08), transparent 40%);
+            max-width: 480px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 16px;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
+            height: 90vh;
+            max-height: 800px;
         }
 
-        .app-header {
+        .header {
+            padding: 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 2px;
         }
 
-        .app-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
         }
 
-        .header-actions {
+        .controls {
             display: flex;
             gap: 8px;
         }
 
-        .icon-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
+        select, button {
+            background: var(--bg-input);
             color: var(--text-main);
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
+            outline: none;
         }
-        .icon-btn:active { transform: scale(0.92); }
 
-        .nav-tabs {
+        .tab-bar {
             display: flex;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
+            background: var(--bg-input);
             padding: 4px;
-            gap: 4px;
-            backdrop-filter: blur(12px);
+            margin: 10px 16px 0;
+            border-radius: 12px;
         }
 
         .tab-btn {
             flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
             padding: 8px;
-            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
             font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
 
         .tab-btn.active {
-            background: var(--accent-gradient);
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            background: var(--accent);
+            color: #ffffff;
         }
 
-        .view-container {
+        .view-content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            overflow: hidden;
+            overflow-y: auto;
+            padding: 16px;
             display: none;
         }
 
-        .view-container.active {
-            display: flex;
-        }
-
-        .budget-box {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 14px;
+        .view-content.active {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 10px 30px var(--glow-color);
-            backdrop-filter: blur(16px);
-            transition: all 0.4s ease;
+        }
+
+        .budget-card {
+            background: var(--bg-input);
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
         }
 
         .budget-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
         }
 
-        .mood-container {
-            width: 34px;
-            height: 34px;
+        .progress-bar-bg {
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--success);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .add-item-form {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            background: var(--bg-input);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        input[type="text"] { flex: 2; }
+        input[type="number"] { flex: 1; }
+
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Auto-suggestions list styling */
+        .suggestions-dropdown {
+            position: absolute;
+            top: 42px;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .suggestion-item:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .list-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-input);
+            padding: 10px;
+            border-radius: 10px;
+            gap: 8px;
+        }
+
+        .item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .completed-text {
+            text-decoration: line-through;
+            color: var(--text-sub);
+        }
+
+        .qty-picker {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: none;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .anim-emoji { font-size: 1.6rem; display: inline-block; }
-        .happy-bounce { animation: bounce 1.2s infinite ease-in-out; }
-        .sad-wiggle { animation: wiggle 2s infinite ease-in-out; }
-        .full-sad-droop { animation: pulse 1.5s infinite ease-in-out; }
-        .angry-shake { animation: shakeAngry 0.3s infinite ease-in-out; }
-
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px) scale(1.1); } }
-        @keyframes wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(0.92); opacity: 1; } }
-        @keyframes shakeAngry { 
-            0% { transform: translate(0, 0) rotate(0deg); } 
-            25% { transform: translate(-2px, 1px) rotate(-3deg); }
-            50% { transform: translate(2px, -1px) rotate(3deg); }
-            75% { transform: translate(-1px, -1px) rotate(-2deg); }
-            100% { transform: translate(1px, 2px) rotate(2deg); }
-        }
-
-        .budget-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-        .budget-input { width: 110px; text-align: center; padding: 6px; font-weight: 700; border-radius: 10px; }
-
-        .progress-track {
-            width: 100%; height: 10px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 10px; overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%; width: 0%;
-            background: var(--success);
-            transition: width 0.4s ease, background-color 0.3s ease;
-            border-radius: 10px;
-        }
-
-        .settings-bar {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 10px;
-            display: flex;
-            gap: 8px;
-            backdrop-filter: blur(12px);
-        }
-
-        .select-group {
+        .chat-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 2px;
-        }
-
-        .select-group label {
-            font-size: 0.65rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        select, input {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 8px 10px;
-            border-radius: 10px;
-            outline: none;
-            font-size: 0.88rem;
-            width: 100%;
-        }
-
-        .input-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            backdrop-filter: blur(12px);
-        }
-
-        .row-two { display: flex; gap: 8px; }
-
-        .submit-btn {
-            background: var(--accent-gradient); color: white; border: none;
-            padding: 11px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-            transition: transform 0.2s ease;
-        }
-        .submit-btn:active { transform: scale(0.96); }
-
-        .list-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
-
-        .list-item {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            padding: 12px; border-radius: 14px; display: flex; align-items: center; gap: 10px;
-            backdrop-filter: blur(12px);
-        }
-
-        .item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-        .item-name { font-size: 0.9rem; font-weight: 600; }
-        .completed-text { text-decoration: line-through; opacity: 0.4; }
-
-        .qty-picker {
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(0, 0, 0, 0.25); padding: 4px 8px; border-radius: 10px;
-        }
-
-        .qty-btn { background: transparent; border: none; color: var(--text-main); width: 22px; height: 22px; cursor: pointer; font-weight: bold; }
-
-        .export-btn {
-            background: linear-gradient(135deg, #10b981, #059669); color: white;
-            border: none; padding: 12px; border-radius: 14px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        }
-
-        .chat-box {
-            flex: 1;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            backdrop-filter: blur(16px);
+            gap: 10px;
+            height: 100%;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            padding-right: 4px;
         }
 
         .chat-bubble {
-            max-width: 88%;
+            max-width: 85%;
             padding: 10px 14px;
             border-radius: 14px;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             line-height: 1.4;
-            word-wrap: break-word;
         }
 
         .chat-bubble.user {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
             align-self: flex-end;
+            background: var(--accent);
+            color: white;
             border-bottom-right-radius: 2px;
         }
 
         .chat-bubble.ai {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
             align-self: flex-start;
+            background: var(--bg-input);
+            color: var(--text-main);
             border-bottom-left-radius: 2px;
+            border: 1px solid var(--border);
         }
 
-        .suggestion-chips-wrapper {
+        .suggestion-chips {
             display: flex;
             gap: 6px;
-            padding: 8px 10px;
             overflow-x: auto;
-            background: rgba(0,0,0,0.15);
-            border-top: 1px solid var(--card-border);
-            white-space: nowrap;
+            padding-bottom: 4px;
         }
 
         .chip-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.76rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            white-space: nowrap;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            font-size: 0.75rem;
+            padding: 6px 10px;
+            border-radius: 16px;
         }
 
-        .chip-btn:hover { background: var(--accent-gradient); color: white; }
-
         .chat-input-area {
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.25);
-            border-top: 1px solid var(--card-border);
             display: flex;
             gap: 8px;
         }
 
         .chat-input-area input {
             flex: 1;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 10px 12px;
-            border-radius: 12px;
-            color: var(--text-main);
         }
 
-        .send-btn {
-            background: var(--accent-gradient);
+        .whatsapp-btn {
+            background: #25D366;
             color: white;
             border: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            width: 100%;
         }
 
         .add-from-ai-btn {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: #34d399;
+            background: var(--success);
+            color: white;
+            border: none;
             padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 700;
+            border-radius: 6px;
             margin-top: 8px;
+            font-size: 0.8rem;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
 
-        .modal-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center; padding: 20px;
-            z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        .anim-emoji { display: inline-block; font-size: 1.2rem; }
+        .happy-bounce { animation: bounce 0.6s infinite alternate; }
+        .sad-wiggle { animation: wiggle 0.5s infinite alternate; }
+        .angry-shake { animation: shake 0.2s infinite; }
+
+        @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-4px); } }
+        @keyframes wiggle { 0% { transform: rotate(-10deg); } 100% { transform: rotate(10deg); } }
+        @keyframes shake { 0% { transform: translateX(-2px); } 100% { transform: translateX(2px); } }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-card {
-            background: var(--bg-body); border: 1px solid var(--card-border);
-            border-radius: 18px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px;
+        .modal.active { display: flex; }
+        .modal-body {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 300px;
+            text-align: center;
+            border: 1px solid var(--border);
         }
-        .modal-btn { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="app-frame" id="appFrame">
-        <!-- Header -->
-        <div class="app-header">
-            <div class="app-title">🛒 Smart Cart Pro</div>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="playClick(); toggleTheme();" title="Toggle Theme">🌓</button>
+    <div class="app-container">
+        <div class="header">
+            <h1>🛒 Smart Cart AI</h1>
+            <div class="controls">
+                <select id="countrySelect" onchange="handleCountryChange()">
+                    <option value="PK">🇵🇰 PK</option>
+                    <option value="IN">🇮🇳 IN</option>
+                    <option value="US">🇺🇸 US</option>
+                </select>
+                <select id="currencySelect" onchange="render()">
+                    <option value="PKR">PKR</option>
+                    <option value="INR">INR</option>
+                    <option value="USD">USD</option>
+                </select>
+                <button onclick="toggleTheme()">🌗</button>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="tab-btn active" id="tabCartBtn" onclick="playClick(); switchTab('cart');">📋 My Cart</button>
-            <button class="tab-btn" id="tabAiBtn" onclick="playClick(); switchTab('ai');">✨ AI Assistant</button>
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tabCartBtn" onclick="switchTab('cart')">Shopping Cart</button>
+            <button class="tab-btn" id="tabAiBtn" onclick="switchTab('ai')">AI Price Assistant</button>
         </div>
 
-        <!-- TAB 1: Shopping Cart View -->
-        <div class="view-container active" id="cartView">
-            <!-- Country & Currency Settings -->
-            <div class="settings-bar">
-                <div class="select-group">
-                    <label>Country</label>
-                    <select id="countrySelect" onchange="playClick(); handleCountryChange();">
-                        <option value="PK">🇵🇰 Pakistan</option>
-                        <option value="IN">🇮🇳 India</option>
-                        <option value="US">🇺🇸 USA</option>
-                    </select>
-                </div>
-                <div class="select-group">
-                    <label>Currency</label>
-                    <select id="currencySelect" onchange="playClick(); render();">
-                        <option value="PKR">PKR (Rs)</option>
-                        <option value="INR">INR (₹)</option>
-                        <option value="USD">USD ($)</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Budget Bar & Mood Emoji -->
-            <div class="budget-box" id="budgetBox">
+        <!-- CART VIEW -->
+        <div class="view-content active" id="cartView">
+            <div class="budget-card">
                 <div class="budget-header">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 0.85rem; font-weight: 600;">Budget Limit</span>
-                        <div id="moodContainer" class="mood-container"></div>
-                    </div>
-                    <div>
-                        <span class="curr-symbol">PKR</span>
-                        <input type="number" class="budget-input" id="budgetLimit" value="3000" onchange="render()">
-                    </div>
+                    <span>Budget Usage</span>
+                    <span id="moodContainer"><span class="anim-emoji happy-bounce">😊</span></span>
                 </div>
-                <div class="progress-track">
-                    <div class="progress-fill" id="progressBar"></div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
                 </div>
-                <div class="budget-row" style="font-size:0.75rem; color:var(--text-sub);">
-                    <span id="progressPercent" style="font-weight: 600;">0% Used</span>
-                    <span>Spent: <b id="totalSpent" style="color:var(--text-main)">0</b></span>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-sub);">
+                    <span>Spent: <b id="totalSpent" style="color:var(--text-main)">0 PKR</b></span>
+                    <span id="progressPercent">0% Used</span>
+                </div>
+                <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
+                    <label style="font-size:0.8rem; color:var(--text-sub)">Limit:</label>
+                    <input type="number" id="budgetLimit" value="3000" style="padding:4px 8px; font-size:0.8rem;" onchange="render()">
                 </div>
             </div>
 
-            <!-- Manual Input Section -->
-            <div class="input-card">
-                <input type="text" id="itemName" placeholder="Item Name (e.g. Perfume, Eggs, Milk...)">
-                <div class="row-two">
-                    <input type="number" id="itemQty" value="1" min="1" placeholder="Qty" style="flex: 1;">
-                    <input type="number" id="itemPrice" placeholder="Price" style="flex: 2;">
+            <div class="add-item-form">
+                <div class="input-group">
+                    <input type="text" id="itemName" placeholder="Item Name (e.g., Egg 1 Dozen)" autocomplete="off" oninput="handleItemTyping(this.value)">
+                    <input type="number" id="itemPrice" placeholder="Price">
+                    <input type="number" id="itemQty" value="1" style="max-width:55px;">
                 </div>
-                <button class="submit-btn" onclick="playClick(); addItem();">+ Add Item Manually</button>
+                <!-- Dynamic Suggestions Dropdown -->
+                <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
+                <button class="btn-add" onclick="addItem()">+ Add Item</button>
             </div>
 
-            <!-- Shopping List -->
             <div class="list-container" id="listBody"></div>
 
-            <!-- WhatsApp Share Footer -->
-            <button class="export-btn" onclick="playClick(); shareToWhatsApp();">
-                💬 Share List via WhatsApp
-            </button>
+            <button class="whatsapp-btn" onclick="shareToWhatsApp()">📲 Share List on WhatsApp</button>
         </div>
 
-        <!-- TAB 2: AI Assistant Chatbot View -->
-        <div class="view-container" id="aiView">
-            <div class="chat-box">
+        <!-- AI VIEW -->
+        <div class="view-content" id="aiView">
+            <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble ai">
-                        👋 Assalam-o-Alaikum! Main aapka AI Assistant hoon. Kisi bhi cheez ka rate poochiye (jaise: <i>"Perfume ka rate"</i> ya <i>"1 dozen eggs"</i>) ya neeche suggestion tap karein.
+                        Salam! Main aapka Smart Shopping AI Assistant hoon. Kisi bhi item ka rate puchen ya cart me add karne ke liye kahein! 💡
                     </div>
                 </div>
-                
-                <!-- Dynamic Auto-Learning Suggestions Chips Bar -->
-                <div class="suggestion-chips-wrapper" id="suggestionChipsContainer"></div>
+
+                <div class="suggestion-chips" id="suggestionChipsContainer"></div>
 
                 <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Ask AI for prices or items..." onkeydown="if(event.key==='Enter') sendQueryToGemini()">
-                    <button class="send-btn" onclick="playClick(); sendQueryToGemini();">➤</button>
+                    <input type="text" id="chatInput" placeholder="Pucho, e.g. Egg dozen price in PKR?" onkeypress="if(event.key==='Enter') sendQueryToGemini()">
+                    <button class="btn-add" onclick="sendQueryToGemini()">Ask</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Warning Modal -->
-        <div class="modal-overlay" id="warningModal">
-            <div class="modal-card">
-                <div class="modal-title" style="color:var(--danger); font-weight:bold;">🚨 Budget Exceeded!</div>
-                <p id="modalMsg" style="font-size:0.85rem; color:var(--text-sub);"></p>
-                <button class="modal-btn" onclick="playClick(); closeModal();">OK</button>
             </div>
         </div>
     </div>
-        <script>
-        // Updated API Key
-        const GEMINI_API_KEY = "AQ.Ab8RN6KvudD3M6f1kV9f-jEJbBRRw-fcwMUge0AJmRZyUK6wsw";
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
+    <div class="modal" id="warningModal">
+        <div class="modal-body">
+            <h3 style="color:var(--danger); margin-bottom:8px;">⚠️ Budget Alert!</h3>
+            <p id="modalMsg" style="font-size:0.9rem; margin-bottom:14px;"></p>
+            <button class="btn-add" onclick="closeModal()">Got it</button>
+        </div>
+    </div>
+    <script>
+        // Store API Key securely in localStorage to avoid public revocation
+        let GEMINI_API_KEY = localStorage.getItem('SMART_CART_GEMINI_KEY') || '';
+
+        // Preset items with defaults + history memory
         let state = {
             country: 'PK',
             currency: 'PKR',
             budget: 3000,
             items: [],
             theme: 'dark',
-            learnedItems: ['Perfume', 'Milk 1L', 'Eggs 1 Dozen', 'Bread', 'Chicken 1kg', 'Rice 1kg', 'Cooking Oil 1L']
+            learnedItems: [
+                { name: 'Egg 1 Dozen', price: 300 },
+                { name: 'Eggs 2 Pcs', price: 50 },
+                { name: 'Milk 1L', price: 210 },
+                { name: 'Bread Large', price: 160 },
+                { name: 'Chicken 1kg', price: 650 },
+                { name: 'Rice 1kg', price: 320 },
+                { name: 'Cooking Oil 1L', price: 520 }
+            ]
         };
 
         const currSymbols = { PKR: 'Rs', INR: '₹', USD: '$' };
@@ -567,6 +538,47 @@
             render();
         }
 
+        // Live typing suggestions for Manual Add
+        function handleItemTyping(val) {
+            const dropdown = document.getElementById('suggestionsDropdown');
+            if (!val.trim()) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const matches = state.learnedItems.filter(item => 
+                item.name.toLowerCase().includes(val.toLowerCase())
+            );
+
+            if (matches.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            matches.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `<span>${item.name}</span> <b>${item.price} ${currSymbols[state.currency]}</b>`;
+                div.onclick = () => {
+                    document.getElementById('itemName').value = item.name;
+                    document.getElementById('itemPrice').value = item.price;
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        function saveToSuggestions(name, price) {
+            const index = state.learnedItems.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+            if (index !== -1) {
+                state.learnedItems[index].price = price; // update price if exists
+            } else {
+                state.learnedItems.unshift({ name, price });
+            }
+        }
+
         function addItem(name = null, price = null, qty = 1) {
             const nameInput = document.getElementById('itemName');
             const priceInput = document.getElementById('itemPrice');
@@ -581,11 +593,8 @@
                 return;
             }
 
-            // Case-insensitive duplicate check & insert at top
-            const exists = state.learnedItems.some(i => i.toLowerCase() === finalName.toLowerCase());
-            if (!exists) {
-                state.learnedItems.unshift(finalName);
-            }
+            // Save manually added item to smart suggestions memory
+            saveToSuggestions(finalName, finalPrice);
 
             state.items.push({
                 id: Date.now(),
@@ -599,10 +608,11 @@
                 nameInput.value = '';
                 priceInput.value = '';
                 qtyInput.value = '1';
+                document.getElementById('suggestionsDropdown').style.display = 'none';
             }
 
             render();
-            renderChips(); // Dynamic Chip Learning Fix
+            renderChips();
         }
 
         function toggleComplete(id) {
@@ -659,7 +669,7 @@
             } else {
                 mood.innerHTML = '<span class="anim-emoji angry-shake">😡</span>';
                 bar.style.backgroundColor = '#b91c1c';
-                showModal(`Budget Limit (${budget} ${curr}) Overstepped by ${(totalSpent - budget).toFixed(0)} ${curr}!`);
+                showModal(`Budget Limit (${budget} ${curr}) Exceeded by ${(totalSpent - budget).toFixed(0)} ${curr}!`);
             }
 
             const listBody = document.getElementById('listBody');
@@ -708,13 +718,13 @@
             const container = document.getElementById('suggestionChipsContainer');
             if (!container) return;
             container.innerHTML = '';
-            state.learnedItems.slice(0, 10).forEach(item => {
+            state.learnedItems.slice(0, 8).forEach(item => {
                 const chip = document.createElement('button');
                 chip.className = 'chip-btn';
-                chip.textContent = `💡 Price of ${item}?`;
+                chip.textContent = `💡 Price of ${item.name}?`;
                 chip.onclick = () => {
                     playClick();
-                    document.getElementById('chatInput').value = `${item} ka rate kya hai?`;
+                    document.getElementById('chatInput').value = `${item.name} ka rate kya hai?`;
                     sendQueryToGemini();
                 };
                 container.appendChild(chip);
@@ -722,6 +732,17 @@
         }
 
         async function sendQueryToGemini() {
+            if (!GEMINI_API_KEY) {
+                const userKey = prompt("Paste your new Gemini API Key here (Saved safely in browser):");
+                if (userKey && userKey.trim() !== '') {
+                    GEMINI_API_KEY = userKey.trim();
+                    localStorage.setItem('SMART_CART_GEMINI_KEY', GEMINI_API_KEY);
+                } else {
+                    alert("API Key is required!");
+                    return;
+                }
+            }
+
             const input = document.getElementById('chatInput');
             const userMsg = input.value.trim();
             if (!userMsg) return;
@@ -742,30 +763,35 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const prompt = `You are a helpful AI Smart Shopping Assistant for ${state.country} region. 
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const promptText = `You are an AI Smart Shopping Assistant for ${state.country} region. 
                 User query: "${userMsg}".
                 Task:
-                1. Provide a direct, helpful estimate for the requested product/price in ${state.currency}.
-                2. Keep the answer concise in natural Roman Urdu or English.
-                3. ALWAYS end with a strict JSON snippet formatted like this:
-                @@JSON{"name": "Item Name", "price": 250, "qty": 1}@@`;
+                1. Provide a direct price estimate for requested item in ${state.currency}.
+                2. Keep response short in Roman Urdu or English.
+                3. ALWAYS end with a strict JSON snippet: @@JSON{"name": "Item Name", "price": 250, "qty": 1}@@`;
 
-                const response = await fetch(GEMINI_API_URL, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
+                        contents: [{ parts: [{ text: promptText }] }]
                     })
                 });
 
                 const data = await response.json();
                 
                 if (data.error) {
+                    if(data.error.code === 400 || data.error.status === "INVALID_ARGUMENT") {
+                        localStorage.removeItem('SMART_CART_GEMINI_KEY');
+                        GEMINI_API_KEY = '';
+                    }
                     aiBubble.textContent = `❌ API Error: ${data.error.message}`;
                     return;
                 }
 
-                let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Response nahi mila. Key check karein.";
+                let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Response nahi mila.";
 
                 let parsedItem = null;
                 const jsonMatch = reply.match(/@@JSON({.*?})@@/s);
@@ -779,6 +805,9 @@
                 aiBubble.innerHTML = reply.replace(/\n/g, '<br>');
 
                 if (parsedItem) {
+                    saveToSuggestions(parsedItem.name, parsedItem.price);
+                    renderChips();
+
                     const addBtn = document.createElement('button');
                     addBtn.className = 'add-from-ai-btn';
                     addBtn.innerHTML = `➕ Add ${parsedItem.name} (${parsedItem.price} ${state.currency}) to Cart`;
@@ -792,7 +821,7 @@
                 }
 
             } catch (err) {
-                aiBubble.textContent = '❌ Fetch Error: Connection loss ya invalid API Key.';
+                aiBubble.textContent = '❌ Fetch Error: Request failed. Key expire ho gayi hai ya network issue hai.';
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -806,8 +835,16 @@
             document.getElementById('warningModal').classList.remove('active');
         }
 
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.add-item-form')) {
+                document.getElementById('suggestionsDropdown').style.display = 'none';
+            }
+        });
+
         render();
         renderChips();
     </script>
 </body>
 </html>
+    
