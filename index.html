@@ -4,103 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Cart AI</title>
-    <!-- Barcode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
         :root {
-            --bg-primary: #0b0f19;
-            --bg-card: rgba(30, 41, 59, 0.7);
-            --bg-input: rgba(51, 65, 85, 0.6);
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.4);
-            --accent-hover: #4f46e5;
+            --bg-body: #030712;
+            --card-bg: rgba(17, 24, 39, 0.6);
+            --card-border: rgba(99, 102, 241, 0.25);
+            --input-bg: rgba(31, 41, 55, 0.6);
+            --text-main: #f9fafb;
+            --text-sub: #9ca3af;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            --primary-glow: 0 0 20px rgba(99, 102, 241, 0.4);
+            --neon-border-glow: 0 0 12px rgba(139, 92, 246, 0.3);
             --success: #10b981;
             --danger: #ef4444;
-            --border: rgba(255, 255, 255, 0.1);
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .light-mode {
-            --bg-primary: #f1f5f9;
-            --bg-card: rgba(255, 255, 255, 0.8);
-            --bg-input: rgba(241, 245, 249, 0.9);
-            --text-main: #0f172a;
-            --text-sub: #64748b;
-            --border: rgba(0, 0, 0, 0.1);
-            --card-shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.2);
+            --bg-body: #f3f4f6;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(99, 102, 241, 0.3);
+            --input-bg: rgba(243, 244, 246, 0.9);
+            --text-main: #111827;
+            --text-sub: #4b5563;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
         body {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.25), transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(217, 70, 239, 0.2), transparent 40%);
             color: var(--text-main);
             min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background 0.3s;
+            overflow: hidden;
         }
 
         .app-container {
             width: 100%;
             max-width: 480px;
             height: 100dvh;
-            background: var(--bg-primary);
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border-left: 1px solid var(--border);
-            border-right: 1px solid var(--border);
+            border-left: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
             position: relative;
         }
 
+        /* --- GLASS HEADER & ANIMATED NEON TITLE --- */
         .header {
-            padding: 14px 16px;
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 10;
         }
 
-        .header h1 { 
-            font-size: 1.2rem; 
-            font-weight: 700; 
-            background: linear-gradient(135deg, #818cf8, #6366f1);
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 40%, #e879f9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            animation: neonPulse 3s infinite alternate ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes neonPulse {
+            0% {
+                filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.6)) drop-shadow(0 0 12px rgba(139, 92, 246, 0.4));
+            }
+            100% {
+                filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.9)) drop-shadow(0 0 22px rgba(217, 70, 239, 0.7));
+            }
         }
 
         .controls { display: flex; gap: 6px; }
 
         select, button {
-            background: var(--bg-input);
+            background: var(--input-bg);
             color: var(--text-main);
-            border: 1px solid var(--border);
+            border: 1px solid var(--card-border);
             padding: 6px 10px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.8rem;
             outline: none;
             transition: all 0.2s ease;
         }
 
-        select:focus, button:active {
-            transform: scale(0.97);
-        }
+        select:focus, button:active { transform: scale(0.96); }
 
         .tab-bar {
             display: flex;
-            background: var(--bg-card);
-            backdrop-filter: blur(8px);
-            padding: 4px;
-            margin: 10px 12px 0;
-            border-radius: 12px;
-            border: 1px solid var(--border);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            padding: 5px;
+            margin: 12px 12px 0;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--neon-border-glow);
         }
 
         .tab-btn {
@@ -109,103 +127,112 @@
             border: none;
             background: transparent;
             color: var(--text-sub);
-            font-weight: 600;
-            border-radius: 8px;
+            font-weight: 700;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .tab-btn.active { 
-            background: var(--accent); 
+        .tab-btn.active {
+            background: var(--primary-gradient);
             color: #ffffff;
-            box-shadow: 0 4px 12px var(--accent-glow);
+            box-shadow: var(--primary-glow);
         }
 
         .view-content {
             flex: 1;
             overflow-y: auto;
             padding: 12px;
-            padding-bottom: 75px;
+            padding-bottom: 80px;
             display: none;
             flex-direction: column;
-            animation: fadeIn 0.3s ease;
+            animation: viewFadeIn 0.35s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
+        @keyframes viewFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .view-content.active { display: flex; }
 
-        .budget-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--border);
+        /* --- GLASS CARDS --- */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
             padding: 14px;
-            border-radius: 14px;
             margin-bottom: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        .budget-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
+        .glass-card:hover {
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: var(--neon-border-glow);
+        }
+
+        .budget-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; }
 
         .progress-bar-bg {
             height: 10px;
-            background: var(--bg-input);
-            border-radius: 6px;
+            background: var(--input-bg);
+            border-radius: 8px;
             overflow: hidden;
             margin-bottom: 8px;
+            border: 1px solid var(--card-border);
         }
 
         .progress-bar-fill {
-            height: 100%; width: 0%; 
-            background: linear-gradient(90deg, #10b981, #34d399);
-            border-radius: 6px;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #34d399, #6366f1);
+            background-size: 200% 100%;
+            border-radius: 8px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+            animation: gradientShift 3s infinite linear;
         }
 
-        /* --- VERTICAL STACKED FORM LAYOUT --- */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- VERTICAL STACKED FORM WITH 50/50 PRICE & QTY --- */
         .add-item-form {
             position: relative;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 14px;
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 14px;
-            box-shadow: var(--card-shadow);
         }
 
-        .input-row {
-            display: flex;
-            gap: 8px;
+        .input-row-equal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             width: 100%;
         }
 
         input[type="text"], input[type="number"] {
-            background: var(--bg-input);
+            background: var(--input-bg);
             color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 11px 12px;
-            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            padding: 12px 14px;
+            border-radius: 12px;
             font-size: 0.85rem;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.25s ease;
+            width: 100%;
         }
 
         input[type="text"]:focus, input[type="number"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-glow);
+            border-color: #a855f7;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+            transform: translateY(-1px);
         }
-
-        input[type="text"] { width: 100%; }
-        #itemPrice { flex: 2; }
-        #itemQty { flex: 1; text-align: center; }
 
         .actions-row {
             display: flex;
@@ -215,121 +242,155 @@
 
         .btn-add {
             flex: 1;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            background: var(--primary-gradient);
             color: white;
             border: none;
-            font-weight: 600;
-            padding: 11px;
-            border-radius: 10px;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px var(--accent-glow);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: var(--primary-glow);
+            transition: all 0.2s ease;
         }
 
-        .btn-add:hover { transform: translateY(-1px); }
-        .btn-add:active { transform: translateY(1px); }
+        .btn-add:hover { transform: translateY(-2px); filter: brightness(1.15); }
+        .btn-add:active { transform: translateY(1px) scale(0.98); }
 
         .icon-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            padding: 10px 12px;
-            border-radius: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 11px;
+            border-radius: 12px;
             font-size: 1rem;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
-        /* Auto-Suggestions Dropdown Animation */
+        .icon-btn:hover { border-color: #a855f7; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+
         .suggestions-dropdown {
             position: absolute;
-            top: 50px; left: 12px; right: 12px;
-            background: var(--bg-primary);
-            border: 1px solid var(--accent);
-            border-radius: 10px;
-            max-height: 150px;
+            top: 55px; left: 0; right: 0;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid #a855f7;
+            border-radius: 14px;
+            max-height: 160px;
             overflow-y: auto;
             z-index: 100;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             display: none;
             animation: dropdownSlide 0.2s ease;
         }
 
         @keyframes dropdownSlide {
-            from { opacity: 0; transform: translateY(-6px); }
+            from { opacity: 0; transform: translateY(-8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .suggestion-item {
-            padding: 10px 12px;
+            padding: 10px 14px;
             cursor: pointer;
             font-size: 0.85rem;
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--card-border);
             transition: background 0.2s;
         }
 
-        .suggestion-item:hover { background: var(--bg-input); }
+        .suggestion-item:hover { background: rgba(168, 85, 247, 0.2); }
 
-        /* LIST & ITEM ANIMATIONS */
-        .list-container { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        /* LIST ITEM ANIMATION & STYLING */
+        .list-container { flex: 1; display: flex; flex-direction: column; gap: 10px; }
 
         .list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--bg-card);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            padding: 12px 14px;
+            border-radius: 14px;
             gap: 10px;
-            box-shadow: var(--card-shadow);
-            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: all 0.2s ease;
+            animation: itemPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s ease;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+        .list-item:hover {
+            border-color: rgba(168, 85, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: var(--neon-border-glow);
+        }
+
+        @keyframes itemPop {
+            from { opacity: 0; transform: translateY(12px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .item-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .completed-text { text-decoration: line-through; color: var(--text-sub); opacity: 0.6; }
+        .item-name { font-weight: 600; font-size: 0.9rem; }
+        .completed-text { text-decoration: line-through; color: var(--text-sub); opacity: 0.5; }
 
-        .qty-picker { display: flex; align-items: center; gap: 6px; }
+        .qty-picker { display: flex; align-items: center; gap: 8px; }
         .qty-btn {
-            width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: bold; cursor: pointer;
+            width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--card-border);
+            background: var(--input-bg); color: var(--text-main); font-weight: bold; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s ease;
         }
+        .qty-btn:active { transform: scale(0.9); }
 
-        /* AI CHAT VIEW STYLING */
+        /* AI CHAT VIEW */
         .chat-container { flex: 1; display: flex; flex-direction: column; gap: 10px; height: 100%; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 
         .chat-bubble { 
             max-width: 85%; 
-            padding: 10px 14px; 
-            border-radius: 14px; 
+            padding: 12px 16px; 
+            border-radius: 16px; 
             font-size: 0.85rem; 
             line-height: 1.4; 
             animation: bubblePop 0.25s ease;
         }
 
         @keyframes bubblePop {
-            from { opacity: 0; transform: scale(0.95); }
+            from { opacity: 0; transform: scale(0.92); }
             to { opacity: 1; transform: scale(1); }
         }
 
-        .chat-bubble.user { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 2px; box-shadow: 0 4px 12px var(--accent-glow); }
-        .chat-bubble.ai { align-self: flex-start; background: var(--bg-card); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
+        .chat-bubble.user { 
+            align-self: flex-end; 
+            background: var(--primary-gradient); 
+            color: white; 
+            border-bottom-right-radius: 4px; 
+            box-shadow: var(--primary-glow); 
+        }
+
+        .chat-bubble.ai { 
+            align-self: flex-start; 
+            background: var(--card-bg); 
+            color: var(--text-main); 
+            border-bottom-left-radius: 4px; 
+            border: 1px solid var(--card-border); 
+            backdrop-filter: blur(12px); 
+        }
 
         .suggestion-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-        .chip-btn { white-space: nowrap; background: var(--bg-card); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 12px; border-radius: 16px; cursor: pointer; }
+        .chip-btn { 
+            white-space: nowrap; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            font-size: 0.75rem; 
+            padding: 6px 12px; 
+            border-radius: 16px; 
+            cursor: pointer; 
+            transition: all 0.2s;
+        }
+        .chip-btn:hover { border-color: #a855f7; transform: translateY(-1px); }
 
         .chat-input-area { display: flex; gap: 6px; }
         .chat-input-area input { flex: 1; }
@@ -337,38 +398,39 @@
         /* FIXED WHATSAPP ACTION BAR */
         .whatsapp-fixed-wrapper {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 12px;
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border);
+            bottom: 0; left: 0; right: 0;
+            padding: 12px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--card-border);
             z-index: 10;
         }
 
         .whatsapp-btn {
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white; border: none; font-weight: 600;
-            padding: 12px; border-radius: 10px; width: 100%; cursor: pointer;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border: none; font-weight: 700;
+            padding: 12px; border-radius: 12px; width: 100%; cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 8px;
-            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
-            transition: transform 0.15s ease;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+            transition: transform 0.15s ease, filter 0.2s;
         }
 
+        .whatsapp-btn:hover { filter: brightness(1.1); }
         .whatsapp-btn:active { transform: scale(0.98); }
 
         .add-from-ai-btn {
             background: var(--success); color: white; border: none;
-            padding: 6px 10px; border-radius: 6px; margin-top: 8px; font-size: 0.8rem; cursor: pointer;
+            padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-size: 0.8rem; cursor: pointer;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
         }
 
-        #scannerArea { display: none; margin-bottom: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--accent); }
+        #scannerArea { display: none; margin-bottom: 10px; border-radius: 14px; overflow: hidden; border: 1px solid #a855f7; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
+        <!-- HEADER WITH GLOWING NEON TEXT -->
         <div class="header">
             <h1>🛒 Smart Cart AI</h1>
             <div class="controls">
@@ -393,7 +455,7 @@
 
         <!-- CART VIEW -->
         <div class="view-content active" id="cartView">
-            <div class="budget-card">
+            <div class="glass-card">
                 <div class="budget-header">
                     <span>Budget Usage</span>
                     <span id="moodContainer">😊</span>
@@ -405,29 +467,29 @@
                     <span>Spent: <b id="totalSpent" style="color:var(--text-main)">0 PKR</b></span>
                     <span id="progressPercent">0% Used</span>
                 </div>
-                <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
+                <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
                     <label style="font-size:0.8rem; color:var(--text-sub)">Limit:</label>
-                    <input type="number" id="budgetLimit" value="3000" style="padding:4px 8px; font-size:0.8rem;" onchange="saveState(); render();">
+                    <input type="number" id="budgetLimit" value="3000" style="padding:6px 10px; font-size:0.8rem; flex:1;" onchange="saveState(); render();">
                 </div>
             </div>
 
             <div id="scannerArea">
                 <div id="reader" style="width: 100%;"></div>
-                <button onclick="stopBarcodeScanner()" style="width: 100%; background: var(--danger); border:none; padding: 6px; color: white;">Close Scanner</button>
+                <button onclick="stopBarcodeScanner()" style="width: 100%; background: var(--danger); border:none; padding: 8px; color: white; font-weight:600;">Close Scanner</button>
             </div>
 
-            <!-- RE-ORDERED FORM: ITEM -> PRICE+QTY -> BUTTONS -->
-            <div class="add-item-form">
-                <!-- 1. Item Name Line -->
+            <!-- FORM: ITEM (LINE 1) -> PRICE & QTY 50/50 GRID (LINE 2) -> ACTIONS (LINE 3) -->
+            <div class="glass-card add-item-form">
+                <!-- Line 1: Item Name -->
                 <input type="text" id="itemName" placeholder="Item Name (e.g. Milk 1L)" autocomplete="off" oninput="handleItemTyping(this.value)">
                 
-                <!-- 2. Price and Qty Line -->
-                <div class="input-row">
+                <!-- Line 2: Price and Quantity Equal Width (50% / 50%) -->
+                <div class="input-row-equal">
                     <input type="number" id="itemPrice" placeholder="Price">
                     <input type="number" id="itemQty" value="1" placeholder="Qty">
                 </div>
 
-                <!-- 3. Add & Voice Actions Line -->
+                <!-- Line 3: Add & Voice Actions -->
                 <div class="actions-row">
                     <button class="icon-btn" onclick="startVoiceInput()" title="Voice Input">🎙️</button>
                     <button class="icon-btn" onclick="startBarcodeScanner()" title="Scan Barcode">📷</button>
@@ -444,12 +506,12 @@
             </div>
         </div>
 
-        <!-- AI VIEW -->
+        <!-- AI CHAT VIEW -->
         <div class="view-content" id="aiView" style="padding-bottom: 12px;">
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble ai">
-                        Salam! Shopping details ya items pricing ke bare me puchen! 💡
+                        Salam! Shopping items ya market rates ke bare me puchen! 💡
                     </div>
                 </div>
 
