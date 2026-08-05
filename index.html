@@ -8,28 +8,31 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #334155;
+            --bg-primary: #0b0f19;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-input: rgba(51, 65, 85, 0.6);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
             --accent-hover: #4f46e5;
             --success: #10b981;
             --danger: #ef4444;
-            --border: #475569;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         .light-mode {
-            --bg-primary: #f8fafc;
-            --bg-card: #ffffff;
-            --bg-input: #f1f5f9;
+            --bg-primary: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-input: rgba(241, 245, 249, 0.9);
             --text-main: #0f172a;
             --text-sub: #64748b;
-            --border: #cbd5e1;
+            --border: rgba(0, 0, 0, 0.1);
+            --card-shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.2);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 
         body {
             background-color: var(--bg-primary);
@@ -45,7 +48,7 @@
             width: 100%;
             max-width: 480px;
             height: 100dvh;
-            background: var(--bg-card);
+            background: var(--bg-primary);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -55,15 +58,23 @@
         }
 
         .header {
-            padding: 12px 16px;
+            padding: 14px 16px;
             background: var(--bg-card);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
         }
 
-        .header h1 { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+        .header h1 { 
+            font-size: 1.2rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
         .controls { display: flex; gap: 6px; }
 
@@ -71,98 +82,129 @@
             background: var(--bg-input);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 6px 8px;
+            padding: 6px 10px;
             border-radius: 8px;
             font-size: 0.8rem;
             outline: none;
+            transition: all 0.2s ease;
+        }
+
+        select:focus, button:active {
+            transform: scale(0.97);
         }
 
         .tab-bar {
             display: flex;
-            background: var(--bg-input);
+            background: var(--bg-card);
+            backdrop-filter: blur(8px);
             padding: 4px;
-            margin: 8px 12px 0;
-            border-radius: 10px;
+            margin: 10px 12px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         .tab-btn {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             border: none;
             background: transparent;
             color: var(--text-sub);
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .tab-btn.active { background: var(--accent); color: #ffffff; }
+        .tab-btn.active { 
+            background: var(--accent); 
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
 
         .view-content {
             flex: 1;
             overflow-y: auto;
             padding: 12px;
-            padding-bottom: 70px; /* Space for fixed bottom WhatsApp button */
+            padding-bottom: 75px;
             display: none;
             flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .view-content.active { display: flex; }
 
         .budget-card {
-            background: var(--bg-input);
-            padding: 12px;
-            border-radius: 12px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 14px;
             margin-bottom: 12px;
         }
 
-        .budget-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+        .budget-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
 
         .progress-bar-bg {
-            height: 8px;
-            background: var(--bg-card);
-            border-radius: 4px;
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .progress-bar-fill {
-            height: 100%; width: 0%; background: var(--success);
-            transition: width 0.3s ease;
+            height: 100%; width: 0%; 
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 6px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
         }
 
-        /* --- VERTICAL FORM LAYOUT FOR MOBILE --- */
+        /* --- VERTICAL STACKED FORM LAYOUT --- */
         .add-item-form {
             position: relative;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 14px;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
         }
 
-        .input-group-top {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-row-half {
+        .input-row {
             display: flex;
             gap: 8px;
+            width: 100%;
         }
 
         input[type="text"], input[type="number"] {
             background: var(--bg-input);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 11px 12px;
+            border-radius: 10px;
             font-size: 0.85rem;
             outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
         }
 
         input[type="text"] { width: 100%; }
-        #itemPrice { flex: 3; }
+        #itemPrice { flex: 2; }
         #itemQty { flex: 1; text-align: center; }
 
         .actions-row {
@@ -173,86 +215,126 @@
 
         .btn-add {
             flex: 1;
-            background: var(--accent);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: white;
             border: none;
             font-weight: 600;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 11px;
+            border-radius: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            box-shadow: 0 4px 12px var(--accent-glow);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
+
+        .btn-add:hover { transform: translateY(-1px); }
+        .btn-add:active { transform: translateY(1px); }
 
         .icon-btn {
             background: var(--bg-input);
             border: 1px solid var(--border);
             padding: 10px 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
             cursor: pointer;
         }
 
-        /* Dropdown */
+        /* Auto-Suggestions Dropdown Animation */
         .suggestions-dropdown {
             position: absolute;
-            top: 86px; left: 0; right: 0;
-            background: var(--bg-card);
+            top: 50px; left: 12px; right: 12px;
+            background: var(--bg-primary);
             border: 1px solid var(--accent);
-            border-radius: 8px;
-            max-height: 140px;
+            border-radius: 10px;
+            max-height: 150px;
             overflow-y: auto;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             display: none;
+            animation: dropdownSlide 0.2s ease;
+        }
+
+        @keyframes dropdownSlide {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .suggestion-item {
-            padding: 8px 12px;
+            padding: 10px 12px;
             cursor: pointer;
             font-size: 0.85rem;
             display: flex;
             justify-content: space-between;
             border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
         }
 
+        .suggestion-item:hover { background: var(--bg-input); }
+
+        /* LIST & ITEM ANIMATIONS */
         .list-container { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
         .list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--bg-input);
-            padding: 10px;
-            border-radius: 10px;
-            gap: 8px;
+            background: var(--bg-card);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 12px;
+            gap: 10px;
+            box-shadow: var(--card-shadow);
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .item-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .item-name { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .completed-text { text-decoration: line-through; color: var(--text-sub); }
+        .item-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .completed-text { text-decoration: line-through; color: var(--text-sub); opacity: 0.6; }
 
         .qty-picker { display: flex; align-items: center; gap: 6px; }
         .qty-btn {
-            width: 24px; height: 24px; border-radius: 4px; border: none;
-            background: var(--bg-card); color: var(--text-main); font-weight: bold; cursor: pointer;
+            width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
 
+        /* AI CHAT VIEW STYLING */
         .chat-container { flex: 1; display: flex; flex-direction: column; gap: 10px; height: 100%; }
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 
-        .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 0.85rem; line-height: 1.4; }
-        .chat-bubble.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
-        .chat-bubble.ai { align-self: flex-start; background: var(--bg-input); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border); }
+        .chat-bubble { 
+            max-width: 85%; 
+            padding: 10px 14px; 
+            border-radius: 14px; 
+            font-size: 0.85rem; 
+            line-height: 1.4; 
+            animation: bubblePop 0.25s ease;
+        }
+
+        @keyframes bubblePop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .chat-bubble.user { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 2px; box-shadow: 0 4px 12px var(--accent-glow); }
+        .chat-bubble.ai { align-self: flex-start; background: var(--bg-card); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
 
         .suggestion-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-        .chip-btn { white-space: nowrap; background: var(--bg-input); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 10px; border-radius: 16px; cursor: pointer; }
+        .chip-btn { white-space: nowrap; background: var(--bg-card); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 12px; border-radius: 16px; cursor: pointer; }
 
         .chat-input-area { display: flex; gap: 6px; }
         .chat-input-area input { flex: 1; }
 
-        /* Fixed WhatsApp bar at bottom */
+        /* FIXED WHATSAPP ACTION BAR */
         .whatsapp-fixed-wrapper {
             position: absolute;
             bottom: 0;
@@ -260,14 +342,21 @@
             right: 0;
             padding: 10px 12px;
             background: var(--bg-card);
+            backdrop-filter: blur(12px);
             border-top: 1px solid var(--border);
+            z-index: 10;
         }
 
         .whatsapp-btn {
-            background: #25D366; color: white; border: none; font-weight: 600;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white; border: none; font-weight: 600;
             padding: 12px; border-radius: 10px; width: 100%; cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+            transition: transform 0.15s ease;
         }
+
+        .whatsapp-btn:active { transform: scale(0.98); }
 
         .add-from-ai-btn {
             background: var(--success); color: white; border: none;
@@ -327,16 +416,18 @@
                 <button onclick="stopBarcodeScanner()" style="width: 100%; background: var(--danger); border:none; padding: 6px; color: white;">Close Scanner</button>
             </div>
 
-            <!-- COLUMN INPUT FORM -->
+            <!-- RE-ORDERED FORM: ITEM -> PRICE+QTY -> BUTTONS -->
             <div class="add-item-form">
-                <div class="input-group-top">
-                    <input type="text" id="itemName" placeholder="Item Name (e.g. Egg 1 Dozen)" autocomplete="off" oninput="handleItemTyping(this.value)">
-                    <div class="input-row-half">
-                        <input type="number" id="itemPrice" placeholder="Price">
-                        <input type="number" id="itemQty" value="1" placeholder="Qty">
-                    </div>
+                <!-- 1. Item Name Line -->
+                <input type="text" id="itemName" placeholder="Item Name (e.g. Milk 1L)" autocomplete="off" oninput="handleItemTyping(this.value)">
+                
+                <!-- 2. Price and Qty Line -->
+                <div class="input-row">
+                    <input type="number" id="itemPrice" placeholder="Price">
+                    <input type="number" id="itemQty" value="1" placeholder="Qty">
                 </div>
 
+                <!-- 3. Add & Voice Actions Line -->
                 <div class="actions-row">
                     <button class="icon-btn" onclick="startVoiceInput()" title="Voice Input">🎙️</button>
                     <button class="icon-btn" onclick="startBarcodeScanner()" title="Scan Barcode">📷</button>
@@ -586,7 +677,7 @@
                     </div>
                     <div class="qty-picker">
                         <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                        <span style="font-size:0.85rem;">${item.qty}</span>
+                        <span style="font-size:0.85rem; font-weight:600;">${item.qty}</span>
                         <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
                     </div>
                     <button style="background:transparent; border:none; color:var(--danger); cursor:pointer;" onclick="deleteItem(${item.id})">🗑️</button>
