@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Cart AI - Advanced Shopping Assistant</title>
+    <title>Smart Cart AI - Ultimate Shopping Assistant</title>
+    <!-- HTML5-QRCode Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
             --bg-primary: #0f172a;
@@ -27,12 +29,7 @@
             --border: #cbd5e1;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 
         body {
             background-color: var(--bg-primary);
@@ -41,8 +38,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
-            transition: background 0.3s ease;
+            padding: 12px;
+            transition: background 0.3s;
         }
 
         .app-container {
@@ -55,12 +52,12 @@
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            height: 90vh;
-            max-height: 800px;
+            height: 92vh;
+            max-height: 820px;
         }
 
         .header {
-            padding: 16px;
+            padding: 14px 16px;
             background: var(--bg-card);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -68,16 +65,9 @@
             align-items: center;
         }
 
-        .header h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
+        .header h1 { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
 
-        .controls {
-            display: flex;
-            gap: 8px;
-        }
+        .controls { display: flex; gap: 6px; }
 
         select, button {
             background: var(--bg-input);
@@ -109,10 +99,7 @@
             transition: all 0.2s;
         }
 
-        .tab-btn.active {
-            background: var(--accent);
-            color: #ffffff;
-        }
+        .tab-btn.active { background: var(--accent); color: #ffffff; }
 
         .view-content {
             flex: 1;
@@ -121,24 +108,16 @@
             display: none;
         }
 
-        .view-content.active {
-            display: flex;
-            flex-direction: column;
-        }
+        .view-content.active { display: flex; flex-direction: column; }
 
         .budget-card {
             background: var(--bg-input);
-            padding: 14px;
+            padding: 12px;
             border-radius: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .budget-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
+        .budget-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
 
         .progress-bar-bg {
             height: 8px;
@@ -149,9 +128,7 @@
         }
 
         .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--success);
+            height: 100%; width: 0%; background: var(--success);
             transition: width 0.3s ease, background-color 0.3s ease;
         }
 
@@ -160,21 +137,18 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        .input-group {
-            display: flex;
-            gap: 8px;
-        }
+        .input-group { display: flex; gap: 6px; }
 
         input[type="text"], input[type="number"] {
             background: var(--bg-input);
             color: var(--text-main);
             border: 1px solid var(--border);
-            padding: 10px;
+            padding: 8px 10px;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
         }
 
@@ -188,18 +162,28 @@
             font-weight: 600;
             padding: 10px;
             border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Auto-suggestions list styling */
+        .icon-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* Auto suggestions Dropdown */
         .suggestions-dropdown {
             position: absolute;
-            top: 42px;
-            left: 0;
-            right: 0;
+            top: 42px; left: 0; right: 0;
             background: var(--bg-card);
             border: 1px solid var(--accent);
             border-radius: 8px;
-            max-height: 150px;
+            max-height: 140px;
             overflow-y: auto;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -215,17 +199,9 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .suggestion-item:hover {
-            background: var(--accent);
-            color: #fff;
-        }
+        .suggestion-item:hover { background: var(--accent); color: #fff; }
 
-        .list-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .list-container { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
         .list-item {
             display: flex;
@@ -237,155 +213,48 @@
             gap: 8px;
         }
 
-        .item-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .item-info { flex: 1; display: flex; flex-direction: column; }
+        .item-name { font-weight: 600; font-size: 0.9rem; }
+        .completed-text { text-decoration: line-through; color: var(--text-sub); }
 
-        .item-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .completed-text {
-            text-decoration: line-through;
-            color: var(--text-sub);
-        }
-
-        .qty-picker {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        .qty-picker { display: flex; align-items: center; gap: 6px; }
         .qty-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            border: none;
-            background: var(--bg-card);
-            color: var(--text-main);
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 22px; height: 22px; border-radius: 4px; border: none;
+            background: var(--bg-card); color: var(--text-main); font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            height: 100%;
-        }
+        .chat-container { flex: 1; display: flex; flex-direction: column; gap: 10px; height: 100%; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-right: 4px;
-        }
+        .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 0.85rem; line-height: 1.4; }
+        .chat-bubble.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
+        .chat-bubble.ai { align-self: flex-start; background: var(--bg-input); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border); }
 
-        .chat-bubble {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
+        .suggestion-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+        .chip-btn { white-space: nowrap; background: var(--bg-input); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 10px; border-radius: 16px; }
 
-        .chat-bubble.user {
-            align-self: flex-end;
-            background: var(--accent);
-            color: white;
-            border-bottom-right-radius: 2px;
-        }
-
-        .chat-bubble.ai {
-            align-self: flex-start;
-            background: var(--bg-input);
-            color: var(--text-main);
-            border-bottom-left-radius: 2px;
-            border: 1px solid var(--border);
-        }
-
-        .suggestion-chips {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .chip-btn {
-            white-space: nowrap;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            font-size: 0.75rem;
-            padding: 6px 10px;
-            border-radius: 16px;
-        }
-
-        .chat-input-area {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-        }
+        .chat-input-area { display: flex; gap: 6px; }
+        .chat-input-area input { flex: 1; }
 
         .whatsapp-btn {
-            background: #25D366;
-            color: white;
-            border: none;
-            font-weight: 600;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 10px;
-            width: 100%;
+            background: #25D366; color: white; border: none; font-weight: 600;
+            padding: 10px; border-radius: 10px; margin-top: 10px; width: 100%;
         }
 
         .add-from-ai-btn {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            margin-top: 8px;
-            font-size: 0.8rem;
-            cursor: pointer;
+            background: var(--success); color: white; border: none;
+            padding: 6px 10px; border-radius: 6px; margin-top: 8px; font-size: 0.8rem; cursor: pointer;
         }
 
-        .anim-emoji { display: inline-block; font-size: 1.2rem; }
-        .happy-bounce { animation: bounce 0.6s infinite alternate; }
-        .sad-wiggle { animation: wiggle 0.5s infinite alternate; }
-        .angry-shake { animation: shake 0.2s infinite; }
-
-        @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-4px); } }
-        @keyframes wiggle { 0% { transform: rotate(-10deg); } 100% { transform: rotate(10deg); } }
-        @keyframes shake { 0% { transform: translateX(-2px); } 100% { transform: translateX(2px); } }
+        #scannerArea { display: none; margin-bottom: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--accent); }
 
         .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000;
         }
         .modal.active { display: flex; }
-        .modal-body {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 300px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
+        .modal-body { background: var(--bg-card); padding: 20px; border-radius: 12px; max-width: 300px; text-align: center; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -410,7 +279,7 @@
 
         <div class="tab-bar">
             <button class="tab-btn active" id="tabCartBtn" onclick="switchTab('cart')">Shopping Cart</button>
-            <button class="tab-btn" id="tabAiBtn" onclick="switchTab('ai')">AI Price Assistant</button>
+            <button class="tab-btn" id="tabAiBtn" onclick="switchTab('ai')">AI Assistant</button>
         </div>
 
         <!-- CART VIEW -->
@@ -418,7 +287,7 @@
             <div class="budget-card">
                 <div class="budget-header">
                     <span>Budget Usage</span>
-                    <span id="moodContainer"><span class="anim-emoji happy-bounce">😊</span></span>
+                    <span id="moodContainer">😊</span>
                 </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" id="progressBar"></div>
@@ -428,20 +297,32 @@
                     <span id="progressPercent">0% Used</span>
                 </div>
                 <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
-                    <label style="font-size:0.8rem; color:var(--text-sub)">Limit:</label>
+                    <label style="font-size:0.8rem; color:var(--text-sub)">Budget Limit:</label>
                     <input type="number" id="budgetLimit" value="3000" style="padding:4px 8px; font-size:0.8rem;" onchange="render()">
                 </div>
             </div>
 
+            <!-- Barcode Scanner Window -->
+            <div id="scannerArea">
+                <div id="reader" style="width: 100%;"></div>
+                <button onclick="stopBarcodeScanner()" style="width: 100%; background: var(--danger); border:none; padding: 6px; color: white; font-weight: bold;">❌ Close Scanner</button>
+            </div>
+
             <div class="add-item-form">
                 <div class="input-group">
-                    <input type="text" id="itemName" placeholder="Item Name (e.g., Egg 1 Dozen)" autocomplete="off" oninput="handleItemTyping(this.value)">
+                    <input type="text" id="itemName" placeholder="Item Name (e.g. Egg 1 Dozen)" autocomplete="off" oninput="handleItemTyping(this.value)">
                     <input type="number" id="itemPrice" placeholder="Price">
-                    <input type="number" id="itemQty" value="1" style="max-width:55px;">
+                    <input type="number" id="itemQty" value="1" style="max-width:45px;">
                 </div>
-                <!-- Dynamic Suggestions Dropdown -->
+
+                <div style="display:flex; gap:6px;">
+                    <button class="icon-btn" onclick="startVoiceInput()" title="Voice Search">🎙️</button>
+                    <button class="icon-btn" onclick="startBarcodeScanner()" title="Scan Barcode">📷</button>
+                    <button class="btn-add" style="flex:1;" onclick="addItem()">+ Add Item</button>
+                </div>
+
+                <!-- Suggestions Dropdown -->
                 <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
-                <button class="btn-add" onclick="addItem()">+ Add Item</button>
             </div>
 
             <div class="list-container" id="listBody"></div>
@@ -454,14 +335,15 @@
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble ai">
-                        Salam! Main aapka Smart Shopping AI Assistant hoon. Kisi bhi item ka rate puchen ya cart me add karne ke liye kahein! 💡
+                        Salam! Main aapka Smart Shopping AI hoon. Kisi product ka rate puchen ya bolo auto-add karne ke liye! 💡
                     </div>
                 </div>
 
                 <div class="suggestion-chips" id="suggestionChipsContainer"></div>
 
                 <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Pucho, e.g. Egg dozen price in PKR?" onkeypress="if(event.key==='Enter') sendQueryToGemini()">
+                    <input type="text" id="chatInput" placeholder="Ask e.g. Egg dozen price in PKR?" onkeypress="if(event.key==='Enter') sendQueryToGemini()">
+                    <button class="icon-btn" onclick="startVoiceInputForAI()">🎙️</button>
                     <button class="btn-add" onclick="sendQueryToGemini()">Ask</button>
                 </div>
             </div>
@@ -470,12 +352,12 @@
 
     <div class="modal" id="warningModal">
         <div class="modal-body">
-            <h3 style="color:var(--danger); margin-bottom:8px;">⚠️ Budget Alert!</h3>
-            <p id="modalMsg" style="font-size:0.9rem; margin-bottom:14px;"></p>
+            <h3 style="color:var(--danger); margin-bottom:8px;">⚠️ Budget Exceeded!</h3>
+            <p id="modalMsg" style="font-size:0.85rem; margin-bottom:14px;"></p>
             <button class="btn-add" onclick="closeModal()">Got it</button>
         </div>
     </div>
-    <script>
+        <script>
         let GEMINI_API_KEY = localStorage.getItem('SMART_CART_GEMINI_KEY') || '';
         let html5QrcodeScanner = null;
 
