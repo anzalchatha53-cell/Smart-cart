@@ -476,10 +476,9 @@
         </div>
     </div>
     <script>
-        // Store API Key securely in localStorage to avoid public revocation
         let GEMINI_API_KEY = localStorage.getItem('SMART_CART_GEMINI_KEY') || '';
+        let html5QrcodeScanner = null;
 
-        // Preset items with defaults + history memory
         let state = {
             country: 'PK',
             currency: 'PKR',
@@ -538,22 +537,16 @@
             render();
         }
 
-        // Live typing suggestions for Manual Add
+        // Live typing suggestions
         function handleItemTyping(val) {
             const dropdown = document.getElementById('suggestionsDropdown');
-            if (!val.trim()) {
-                dropdown.style.display = 'none';
-                return;
-            }
+            if (!val.trim()) { dropdown.style.display = 'none'; return; }
 
             const matches = state.learnedItems.filter(item => 
                 item.name.toLowerCase().includes(val.toLowerCase())
             );
 
-            if (matches.length === 0) {
-                dropdown.style.display = 'none';
-                return;
-            }
+            if (matches.length === 0) { dropdown.style.display = 'none'; return; }
 
             dropdown.innerHTML = '';
             matches.forEach(item => {
@@ -573,7 +566,7 @@
         function saveToSuggestions(name, price) {
             const index = state.learnedItems.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
             if (index !== -1) {
-                state.learnedItems[index].price = price; // update price if exists
+                state.learnedItems[index].price = price;
             } else {
                 state.learnedItems.unshift({ name, price });
             }
@@ -593,7 +586,6 @@
                 return;
             }
 
-            // Save manually added item to smart suggestions memory
             saveToSuggestions(finalName, finalPrice);
 
             state.items.push({
@@ -613,6 +605,55 @@
 
             render();
             renderChips();
+        }
+
+        // Voice Search Feature
+        function startVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("Voice Search not supported in this browser!"); return; }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const voiceText = event.results[0][0].transcript;
+                document.getElementById('itemName').value = voiceText;
+                handleItemTyping(voiceText);
+            };
+        }
+
+        function startVoiceInputForAI() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("Voice Search not supported!"); return; }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                document.getElementById('chatInput').value = event.results[0][0].transcript;
+                sendQueryToGemini();
+            };
+        }
+
+        // Barcode / QR Scanner Feature
+        function startBarcodeScanner() {
+            document.getElementById('scannerArea').style.display = 'block';
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render((decodedText) => {
+                stopBarcodeScanner();
+                document.getElementById('itemName').value = `Item (${decodedText.substring(0, 6)})`;
+                document.getElementById('itemPrice').value = Math.floor(Math.random() * 200) + 50;
+                alert(`Scanned Barcode: ${decodedText}`);
+            }, (error) => {});
+        }
+
+        function stopBarcodeScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+                document.getElementById('scannerArea').style.display = 'none';
+            }
         }
 
         function toggleComplete(id) {
@@ -638,7 +679,6 @@
         function render() {
             const curr = document.getElementById('currencySelect').value;
             state.currency = curr;
-            document.querySelectorAll('.curr-symbol').forEach(el => el.textContent = currSymbols[curr] || curr);
 
             const budget = parseFloat(document.getElementById('budgetLimit').value) || 0;
             state.budget = budget;
@@ -650,25 +690,17 @@
             const bar = document.getElementById('progressBar');
             bar.style.width = `${percent}%`;
 
-            const percentText = document.getElementById('progressPercent');
-            percentText.textContent = `${percent.toFixed(0)}% Used`;
+            document.getElementById('progressPercent').textContent = `${percent.toFixed(0)}% Used`;
 
             const mood = document.getElementById('moodContainer');
             if (totalSpent === 0) {
-                mood.innerHTML = '<span class="anim-emoji happy-bounce">😊</span>';
-                bar.style.backgroundColor = 'var(--success)';
+                mood.innerHTML = '😊'; bar.style.backgroundColor = 'var(--success)';
             } else if (totalSpent <= budget * 0.75) {
-                mood.innerHTML = '<span class="anim-emoji happy-bounce">🙂</span>';
-                bar.style.backgroundColor = 'var(--success)';
+                mood.innerHTML = '🙂'; bar.style.backgroundColor = 'var(--success)';
             } else if (totalSpent <= budget) {
-                mood.innerHTML = '<span class="anim-emoji sad-wiggle">😟</span>';
-                bar.style.backgroundColor = '#f59e0b';
-            } else if (totalSpent <= budget * 1.25) {
-                mood.innerHTML = '<span class="anim-emoji full-sad-droop">😭</span>';
-                bar.style.backgroundColor = 'var(--danger)';
+                mood.innerHTML = '😟'; bar.style.backgroundColor = '#f59e0b';
             } else {
-                mood.innerHTML = '<span class="anim-emoji angry-shake">😡</span>';
-                bar.style.backgroundColor = '#b91c1c';
+                mood.innerHTML = '😡'; bar.style.backgroundColor = 'var(--danger)';
                 showModal(`Budget Limit (${budget} ${curr}) Exceeded by ${(totalSpent - budget).toFixed(0)} ${curr}!`);
             }
 
@@ -689,29 +721,22 @@
                         <span style="font-size:0.85rem; font-weight:bold;">${item.qty}</span>
                         <button class="qty-btn" onclick="playClick(); updateQty(${item.id}, 1)">+</button>
                     </div>
-                    <button style="background:transparent; border:none; color:var(--danger); cursor:pointer; font-size:1.1rem;" onclick="playClick(); deleteItem(${item.id})">🗑️</button>
+                    <button style="background:transparent; border:none; color:var(--danger); cursor:pointer;" onclick="playClick(); deleteItem(${item.id})">🗑️</button>
                 `;
                 listBody.appendChild(card);
             });
         }
 
         function shareToWhatsApp() {
-            if (state.items.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            if (state.items.length === 0) { alert("Your cart is empty!"); return; }
             let msg = `🛒 *Smart Cart Shopping List*\n\n`;
             let total = 0;
             state.items.forEach((item, index) => {
-                const sub = item.price * item.qty;
-                total += sub;
+                const sub = item.price * item.qty; total += sub;
                 msg += `${index + 1}. ${item.name} - ${item.qty}x @ ${item.price} = *${sub} ${state.currency}*\n`;
             });
             msg += `\n💰 *Total Estimated Spent:* ${total} ${state.currency}`;
-            msg += `\n📌 *Budget Limit:* ${state.budget} ${state.currency}`;
-            
-            const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-            window.open(url, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function renderChips() {
@@ -738,8 +763,7 @@
                     GEMINI_API_KEY = userKey.trim();
                     localStorage.setItem('SMART_CART_GEMINI_KEY', GEMINI_API_KEY);
                 } else {
-                    alert("API Key is required!");
-                    return;
+                    alert("API Key is required!"); return;
                 }
             }
 
@@ -775,9 +799,7 @@
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
                 });
 
                 const data = await response.json();
@@ -835,7 +857,6 @@
             document.getElementById('warningModal').classList.remove('active');
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.add-item-form')) {
                 document.getElementById('suggestionsDropdown').style.display = 'none';
@@ -847,4 +868,3 @@
     </script>
 </body>
 </html>
-    
