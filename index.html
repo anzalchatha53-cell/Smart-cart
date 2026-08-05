@@ -51,6 +51,7 @@
             overflow: hidden;
             border-left: 1px solid var(--border);
             border-right: 1px solid var(--border);
+            position: relative;
         }
 
         .header {
@@ -92,6 +93,7 @@
             color: var(--text-sub);
             font-weight: 600;
             border-radius: 8px;
+            cursor: pointer;
         }
 
         .tab-btn.active { background: var(--accent); color: #ffffff; }
@@ -100,6 +102,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 12px;
+            padding-bottom: 70px; /* Space for fixed bottom WhatsApp button */
             display: none;
             flex-direction: column;
         }
@@ -128,6 +131,7 @@
             transition: width 0.3s ease;
         }
 
+        /* --- VERTICAL FORM LAYOUT FOR MOBILE --- */
         .add-item-form {
             position: relative;
             display: flex;
@@ -136,7 +140,16 @@
             margin-bottom: 12px;
         }
 
-        .input-group { display: flex; gap: 6px; }
+        .input-group-top {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-row-half {
+            display: flex;
+            gap: 8px;
+        }
 
         input[type="text"], input[type="number"] {
             background: var(--bg-input);
@@ -148,10 +161,18 @@
             outline: none;
         }
 
-        input[type="text"] { flex: 2; width: 0; }
-        input[type="number"] { flex: 1; width: 0; }
+        input[type="text"] { width: 100%; }
+        #itemPrice { flex: 3; }
+        #itemQty { flex: 1; text-align: center; }
+
+        .actions-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
 
         .btn-add {
+            flex: 1;
             background: var(--accent);
             color: white;
             border: none;
@@ -167,14 +188,16 @@
         .icon-btn {
             background: var(--bg-input);
             border: 1px solid var(--border);
-            padding: 8px 10px;
+            padding: 10px 12px;
             border-radius: 8px;
             font-size: 1rem;
+            cursor: pointer;
         }
 
+        /* Dropdown */
         .suggestions-dropdown {
             position: absolute;
-            top: 42px; left: 0; right: 0;
+            top: 86px; left: 0; right: 0;
             background: var(--bg-card);
             border: 1px solid var(--accent);
             border-radius: 8px;
@@ -213,7 +236,7 @@
         .qty-picker { display: flex; align-items: center; gap: 6px; }
         .qty-btn {
             width: 24px; height: 24px; border-radius: 4px; border: none;
-            background: var(--bg-card); color: var(--text-main); font-weight: bold;
+            background: var(--bg-card); color: var(--text-main); font-weight: bold; cursor: pointer;
         }
 
         .chat-container { flex: 1; display: flex; flex-direction: column; gap: 10px; height: 100%; }
@@ -224,14 +247,26 @@
         .chat-bubble.ai { align-self: flex-start; background: var(--bg-input); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border); }
 
         .suggestion-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-        .chip-btn { white-space: nowrap; background: var(--bg-input); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 10px; border-radius: 16px; }
+        .chip-btn { white-space: nowrap; background: var(--bg-input); border: 1px solid var(--border); font-size: 0.75rem; padding: 6px 10px; border-radius: 16px; cursor: pointer; }
 
         .chat-input-area { display: flex; gap: 6px; }
         .chat-input-area input { flex: 1; }
 
+        /* Fixed WhatsApp bar at bottom */
+        .whatsapp-fixed-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
         .whatsapp-btn {
             background: #25D366; color: white; border: none; font-weight: 600;
-            padding: 10px; border-radius: 10px; margin-top: 10px; width: 100%;
+            padding: 12px; border-radius: 10px; width: 100%; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
         }
 
         .add-from-ai-btn {
@@ -292,17 +327,20 @@
                 <button onclick="stopBarcodeScanner()" style="width: 100%; background: var(--danger); border:none; padding: 6px; color: white;">Close Scanner</button>
             </div>
 
+            <!-- COLUMN INPUT FORM -->
             <div class="add-item-form">
-                <div class="input-group">
-                    <input type="text" id="itemName" placeholder="Item Name (e.g. Egg)" autocomplete="off" oninput="handleItemTyping(this.value)">
-                    <input type="number" id="itemPrice" placeholder="Price">
-                    <input type="number" id="itemQty" value="1" style="max-width:45px;">
+                <div class="input-group-top">
+                    <input type="text" id="itemName" placeholder="Item Name (e.g. Egg 1 Dozen)" autocomplete="off" oninput="handleItemTyping(this.value)">
+                    <div class="input-row-half">
+                        <input type="number" id="itemPrice" placeholder="Price">
+                        <input type="number" id="itemQty" value="1" placeholder="Qty">
+                    </div>
                 </div>
 
-                <div style="display:flex; gap:6px;">
-                    <button class="icon-btn" onclick="startVoiceInput()">🎙️</button>
-                    <button class="icon-btn" onclick="startBarcodeScanner()">📷</button>
-                    <button class="btn-add" style="flex:1;" onclick="addItem()">+ Add Item</button>
+                <div class="actions-row">
+                    <button class="icon-btn" onclick="startVoiceInput()" title="Voice Input">🎙️</button>
+                    <button class="icon-btn" onclick="startBarcodeScanner()" title="Scan Barcode">📷</button>
+                    <button class="btn-add" onclick="addItem()">+ Add Item</button>
                 </div>
 
                 <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
@@ -310,11 +348,13 @@
 
             <div class="list-container" id="listBody"></div>
 
-            <button class="whatsapp-btn" onclick="shareToWhatsApp()">📲 Share List on WhatsApp</button>
+            <div class="whatsapp-fixed-wrapper">
+                <button class="whatsapp-btn" onclick="shareToWhatsApp()">📲 Share List on WhatsApp</button>
+            </div>
         </div>
 
         <!-- AI VIEW -->
-        <div class="view-content" id="aiView">
+        <div class="view-content" id="aiView" style="padding-bottom: 12px;">
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble ai">
@@ -332,11 +372,11 @@
             </div>
         </div>
     </div>
+
     <script>
         let GEMINI_API_KEY = localStorage.getItem('SMART_CART_GEMINI_KEY') || '';
         let html5QrcodeScanner = null;
 
-        // Load History from LocalStorage
         let defaultLearned = [
             { name: 'Egg 1 Dozen', price: 300 },
             { name: 'Eggs 2 Pcs', price: 50 },
@@ -549,7 +589,7 @@
                         <span style="font-size:0.85rem;">${item.qty}</span>
                         <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
                     </div>
-                    <button style="background:transparent; border:none; color:var(--danger);" onclick="deleteItem(${item.id})">🗑️</button>
+                    <button style="background:transparent; border:none; color:var(--danger); cursor:pointer;" onclick="deleteItem(${item.id})">🗑️</button>
                 `;
                 listBody.appendChild(card);
             });
