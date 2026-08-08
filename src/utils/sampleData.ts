@@ -1,0 +1,190 @@
+import { BarcodeProduct, CartItem } from "../types";
+
+export const INITIAL_CART_ITEMS: CartItem[] = [
+  {
+    id: "item-1",
+    name: "🥛 Full Cream Milk 1L Pack",
+    price: 320,
+    quantity: 2,
+    checked: false,
+    addedAt: Date.now() - 3600000,
+    barcode: "896400010011",
+  },
+  {
+    id: "item-2",
+    name: "🥚 Farm Fresh Eggs (12-Pack)",
+    price: 380,
+    quantity: 1,
+    checked: false,
+    addedAt: Date.now() - 3400000,
+  },
+  {
+    id: "item-3",
+    name: "📓 Exercise Notebook / Copy",
+    price: 150,
+    quantity: 2,
+    checked: false,
+    addedAt: Date.now() - 3200000,
+  },
+  {
+    id: "item-4",
+    name: "🍞 Fresh Large Sandwich Bread",
+    price: 180,
+    quantity: 1,
+    checked: false,
+    addedAt: Date.now() - 2800000,
+  },
+  {
+    id: "item-5",
+    name: "🍚 Basmati Super Rice 5kg Bag",
+    price: 1850,
+    quantity: 1,
+    checked: true,
+    addedAt: Date.now() - 2400000,
+    barcode: "896400020022",
+  },
+];
+
+export const VIRTUAL_BARCODE_DATABASE: BarcodeProduct[] = [
+  {
+    barcode: "896400010011",
+    name: "Nestle Milkpak 1L Pack",
+    price: 320,
+    category: "Dairy",
+    unit: "pack",
+    brand: "Nestle",
+  },
+  {
+    barcode: "896400020022",
+    name: "Guard Super Basmati Rice 5kg",
+    price: 1850,
+    category: "Pantry",
+    unit: "bag",
+    brand: "Guard",
+  },
+  {
+    barcode: "896400030033",
+    name: "Farm Fresh Organic Eggs (12 pcs)",
+    price: 380,
+    category: "Dairy",
+    unit: "pack",
+    brand: "Farm Fresh",
+  },
+  {
+    barcode: "896400040044",
+    name: "Dawn Bread Large White",
+    price: 180,
+    category: "Bakery",
+    unit: "pack",
+    brand: "Dawn",
+  },
+  {
+    barcode: "896400050055",
+    name: "Shan Special Biryani Masala 50g",
+    price: 140,
+    category: "Pantry",
+    unit: "pack",
+    brand: "Shan",
+  },
+  {
+    barcode: "896400060066",
+    name: "Lays Masala Potato Chips 65g",
+    price: 100,
+    category: "Snacks",
+    unit: "pack",
+    brand: "Lays",
+  },
+  {
+    barcode: "896400070077",
+    name: "Coca-Cola Original 1.5L Bottle",
+    price: 220,
+    category: "Beverages",
+    unit: "bottle",
+    brand: "Coca-Cola",
+  },
+  {
+    barcode: "896400080088",
+    name: "Tapal Danedar Black Tea 450g",
+    price: 950,
+    category: "Pantry",
+    unit: "pack",
+    brand: "Tapal",
+  },
+  {
+    barcode: "896400090099",
+    name: "Nutella Hazelnut Spread 350g",
+    price: 1450,
+    category: "Snacks",
+    unit: "jar",
+    brand: "Ferrero",
+  },
+  {
+    barcode: "896400100100",
+    name: "Dove Beauty Cream Bar Soap 100g",
+    price: 260,
+    category: "Household",
+    unit: "pcs",
+    brand: "Unilever",
+  },
+  {
+    barcode: "896400110111",
+    name: "Ariel Complete Washing Powder 1kg",
+    price: 890,
+    category: "Household",
+    unit: "pack",
+    brand: "Procter & Gamble",
+  },
+];
+
+export const SMART_SUGGESTION_DATABASE = [
+  // Books & School/Office Supplies (Daily & Academic Needs)
+  { name: "📚 School / College Course Book", price: 350 },
+  { name: "📓 Exercise Notebook / Copy (Single Line)", price: 140 },
+  { name: "📝 Rough Practice Register / Copy", price: 180 },
+  { name: "🖊️ Blue Ballpoint / Gel Pen Set (Pack of 5)", price: 120 },
+  { name: "✏️ Lead Pencils & Eraser Set", price: 80 },
+  { name: "📐 Student Geometry Box & Scale Set", price: 250 },
+  { name: "🖍️ Color Marker / Highlighter Pack", price: 200 },
+
+  // Daily Foods, Dairy & Breakfast
+  { name: "🥛 Full Cream Milk 1L Pack", price: 320 },
+  { name: "🥚 Farm Fresh Eggs (12-Pack)", price: 380 },
+  { name: "🍞 Fresh Large Sandwich Bread", price: 180 },
+  { name: "🧈 Dairy Butter 200g", price: 390 },
+  { name: "🧀 Cheddar Cheese Slices 200g", price: 460 },
+  { name: "🥣 Breakfast Oats / Corn Flakes 500g", price: 650 },
+  { name: "🧃 Fruit Juice Pack 1L", price: 280 },
+  { name: "☕ Instant Coffee Jar 100g", price: 1250 },
+  { name: "🍵 Black Tea Leaves 450g", price: 950 },
+
+  // Daily Kitchen Grocery & Pantry
+  { name: "🍚 Basmati Super Rice 5kg Bag", price: 1850 },
+  { name: "🌾 Whole Wheat Flour (Atta) 10kg", price: 1450 },
+  { name: "🌻 Cooking Oil / Ghee 3 Liters", price: 1550 },
+  { name: "🍬 White Sugar 1kg", price: 150 },
+  { name: "🧂 Iodized Cooking Salt 800g", price: 70 },
+  { name: "🍝 Spaghetti / Macaroni Pasta 400g", price: 220 },
+  { name: "🍿 Potato Crisps / Snacks Pack", price: 100 },
+  { name: "🍫 Chocolate Bar 100g", price: 180 },
+
+  // Fresh Fruits & Vegetables
+  { name: "🥔 Fresh Potatoes 1kg", price: 90 },
+  { name: "🧅 Fresh Onions 1kg", price: 140 },
+  { name: "🍅 Fresh Red Tomatoes 1kg", price: 120 },
+  { name: "🍎 Red Apples 1kg", price: 350 },
+  { name: "🍌 Ripe Bananas (1 Dozen)", price: 180 },
+  { name: "🍋 Fresh Lemons 250g", price: 80 },
+  { name: "🍗 Fresh Chicken Boneless 1kg", price: 1150 },
+
+  // Daily Hygiene & Household Essentials
+  { name: "🧼 Bath Soap Bar (Dove / Lux)", price: 240 },
+  { name: "🧴 Dishwashing Liquid Soap 500ml", price: 320 },
+  { name: "🧼 Washing Powder 1kg", price: 650 },
+  { name: "🧻 Facial Tissue Paper Box", price: 220 },
+  { name: "🪥 Toothpaste 140g", price: 290 },
+  { name: "🚰 Commercial Drinking Water Can (19L)", price: 180 },
+  { name: "⚡ Electricity Bill", price: 4500 },
+  { name: "🔥 Gas Bill", price: 1200 },
+];
+
+
