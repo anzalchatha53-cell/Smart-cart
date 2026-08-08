@@ -1,0 +1,6 @@
+{
+  "name": "Smart Cart AI",
+  "description": "Legendary AI shopping cart, budget manager, barcode scanner, voice item logger, and AI assistant.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
